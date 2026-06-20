@@ -30,6 +30,7 @@ jobs:
           cache-dependency-path: demos/iron-serpent/package-lock.json
 
       - run: npm ci
+      - run: npm test
       - run: npm run build
 
       - uses: actions/upload-pages-artifact@v3

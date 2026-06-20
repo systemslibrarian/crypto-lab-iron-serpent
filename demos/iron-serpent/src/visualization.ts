@@ -51,7 +51,16 @@ export function renderVisualization(container: HTMLElement): void {
   const draw = () => {
     container.innerHTML = '';
 
-    const containerWidth = container.clientWidth || 800;
+    // Read theme colors live so the chart adapts to light/dark mode.
+    const styles = getComputedStyle(document.documentElement);
+    const cssVar = (name: string, fallback: string) => styles.getPropertyValue(name).trim() || fallback;
+    const textColor = cssVar('--text', '#e6edf3');
+    const mutedColor = cssVar('--text-muted', '#8b949e');
+    const goldColor = cssVar('--gold', '#d4a72c');
+
+    // Fixed design width: the SVG scales to fit its container via width:100% +
+    // maxWidth, so nothing clips on narrow (mobile) viewports.
+    const containerWidth = 760;
     const rowHeight = 60;
     const padding = 20;
     const labelWidth = 120;
@@ -60,20 +69,23 @@ export function renderVisualization(container: HTMLElement): void {
     const blockWidth = Math.max(8, Math.floor(barAreaWidth / maxRounds) - 2);
     const blockGap = 2;
     const svgHeight = ciphers.length * (rowHeight + 20) + 140;
+    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
     const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
     svg.setAttribute('width', '100%');
     svg.setAttribute('viewBox', `0 0 ${containerWidth} ${svgHeight}`);
     svg.setAttribute('role', 'img');
     svg.setAttribute('aria-label', 'Security margin visualization comparing Serpent-256 (32 rounds, 20 unbroken) versus AES-128 (10 rounds, 3 unbroken), AES-192 (12 rounds, 4 unbroken), and AES-256 (14 rounds, 5 unbroken). Serpent has 2.7 times the safety margin of AES-256.');
-    svg.style.maxWidth = '100%';
+    svg.style.maxWidth = `${containerWidth}px`;
+    svg.style.display = 'block';
+    svg.style.margin = '0 auto';
 
     // Title
     const title = document.createElementNS('http://www.w3.org/2000/svg', 'text');
     title.setAttribute('x', `${containerWidth / 2}`);
     title.setAttribute('y', '30');
     title.setAttribute('text-anchor', 'middle');
-    title.setAttribute('fill', '#e0e0e0');
+    title.setAttribute('fill', textColor);
     title.setAttribute('font-size', '18');
     title.setAttribute('font-weight', 'bold');
     title.textContent = 'Round Count & Security Margins';
@@ -86,7 +98,7 @@ export function renderVisualization(container: HTMLElement): void {
       const label = document.createElementNS('http://www.w3.org/2000/svg', 'text');
       label.setAttribute('x', `${padding}`);
       label.setAttribute('y', `${y + rowHeight / 2 + 5}`);
-      label.setAttribute('fill', '#e0e0e0');
+      label.setAttribute('fill', textColor);
       label.setAttribute('font-size', '14');
       label.setAttribute('font-weight', 'bold');
       label.textContent = cipher.name;
@@ -103,12 +115,16 @@ export function renderVisualization(container: HTMLElement): void {
         rect.setAttribute('height', `${rowHeight - 10}`);
         rect.setAttribute('rx', '3');
         rect.setAttribute('fill', isAttacked ? cipher.color : cipher.marginColor);
-        rect.setAttribute('opacity', '0');
-        rect.style.transition = 'opacity 0.15s ease';
 
-        // Stagger animation
-        const delay = r * 30;
-        setTimeout(() => rect.setAttribute('opacity', '1'), delay);
+        if (reduceMotion) {
+          rect.setAttribute('opacity', '1');
+        } else {
+          rect.setAttribute('opacity', '0');
+          rect.style.transition = 'opacity 0.15s ease';
+          // Stagger animation
+          const delay = r * 30;
+          setTimeout(() => rect.setAttribute('opacity', '1'), delay);
+        }
 
         svg.appendChild(rect);
       }
@@ -172,7 +188,7 @@ export function renderVisualization(container: HTMLElement): void {
       const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
       text.setAttribute('x', `${lx + 20}`);
       text.setAttribute('y', `${ly + 12}`);
-      text.setAttribute('fill', '#aaa');
+      text.setAttribute('fill', mutedColor);
       text.setAttribute('font-size', '11');
       text.textContent = item.label;
       svg.appendChild(text);
@@ -183,7 +199,7 @@ export function renderVisualization(container: HTMLElement): void {
     callout.setAttribute('x', `${containerWidth / 2}`);
     callout.setAttribute('y', `${svgHeight - 15}`);
     callout.setAttribute('text-anchor', 'middle');
-    callout.setAttribute('fill', '#d4a72c');
+    callout.setAttribute('fill', goldColor);
     callout.setAttribute('font-size', '13');
     callout.setAttribute('font-style', 'italic');
     callout.textContent = "Serpent's unbroken margin is 2.7\u00D7 wider than AES-256";
@@ -196,4 +212,8 @@ export function renderVisualization(container: HTMLElement): void {
 
   const observer = new ResizeObserver(() => draw());
   observer.observe(container);
+
+  // Redraw when the theme changes so SVG text colors stay readable.
+  const themeObserver = new MutationObserver(() => draw());
+  themeObserver.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
 }

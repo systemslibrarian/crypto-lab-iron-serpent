@@ -23,12 +23,16 @@
         </p>
       </header>
 
+      <main>
       <div id="init-status" class="status-banner" role="status" aria-live="polite">Initializing Serpent-256 WASM engine…</div>
 
       <!-- Encrypt / Decrypt panels -->
       <section id="crypto-panels">
         <div class="panel" id="encrypt-panel">
-          <h2>Encrypt</h2>
+          <div class="panel-head">
+            <h2>Encrypt</h2>
+            <button type="button" id="enc-example" class="ghost-btn" title="Fill in a sample passphrase and message">Load example</button>
+          </div>
           <div class="field">
             <label for="enc-pass">Passphrase</label>
             <div class="password-field">
@@ -52,6 +56,7 @@
             </label>
             <textarea id="enc-output" rows="8" readonly placeholder="Encrypted payload will appear here…"></textarea>
           </div>
+          <button type="button" id="enc-to-dec" class="ghost-btn full" disabled>Send this payload to Decrypt &#x2192;</button>
           <details class="info-box">
             <summary>Argon2id Parameters</summary>
             <ul>
@@ -92,6 +97,18 @@
         <div id="vis-container"></div>
       </section>
 
+      <!-- Avalanche effect -->
+      <section id="avalanche-section">
+        <h2>Avalanche Effect</h2>
+        <p class="bench-note">
+          <strong>Strict Avalanche Criterion:</strong> a single-bit change to the input of a
+          strong block cipher should flip about half of the output bits. Encrypt one 128-bit
+          block below, flip a single input bit, and watch how many of Serpent-256's 128
+          output bits change. A result near 50% is exactly what good diffusion looks like.
+        </p>
+        <div id="avalanche-container"></div>
+      </section>
+
       <!-- Benchmark -->
       <section id="bench-section">
         <h2>Performance Comparison</h2>
@@ -125,7 +142,7 @@
         <button id="bench-btn" class="primary-btn">Run Benchmark</button>
         <div id="bench-progress" class="hidden" role="status" aria-live="polite">
           <span id="bench-progress-text"></span>
-          <div class="bench-progress-bar" role="progressbar" aria-valuemin="0" aria-valuemax="100"><div id="bench-progress-fill"></div></div>
+          <div class="bench-progress-bar" role="progressbar" aria-label="Benchmark progress" aria-valuemin="0" aria-valuemax="100"><div id="bench-progress-fill"></div></div>
         </div>
         <div id="bench-results" class="hidden">
           <p class="bench-meta" id="bench-meta">Average throughput across <span id="bench-meta-iters">10</span> timed runs · <span id="bench-meta-size">1 MB</span> random plaintext per run · full round count each block</p>
@@ -193,6 +210,7 @@
           </div>
         </div>
       </section>
+      </main>
 
     </div>
     <footer style="text-align:center; padding: 1.5rem; font-size: 0.85rem; opacity: 0.7; margin-top: 2rem; border-top: none;">

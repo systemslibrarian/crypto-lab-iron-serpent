@@ -128,6 +128,33 @@ describe('Serpent-256 Block Cipher', () => {
     cipher.dispose();
   });
 
+  it('exhibits the avalanche effect: one input bit flips ~50% of output bits', () => {
+    // Strict Avalanche Criterion — averaged over all 128 single-bit input flips,
+    // the fraction of changed output bits should sit close to 50%.
+    const key = hexToBytes('00112233445566778899aabbccddeeff102132435465768798a9bacbdcedfe0f');
+    const base = hexToBytes('53657270656e742d3235362064656d6f');
+
+    const cipher = new Serpent256();
+    cipher.loadKey(key);
+    const ctBase = cipher.encryptBlock(base);
+
+    let totalChanged = 0;
+    for (let bit = 0; bit < 128; bit++) {
+      const flipped = base.slice();
+      flipped[bit >> 3] ^= 0x80 >> (bit & 7);
+      const ct = cipher.encryptBlock(flipped);
+      for (let b = 0; b < 16; b++) {
+        let x = ctBase[b] ^ ct[b];
+        while (x) { totalChanged += x & 1; x >>= 1; }
+      }
+    }
+    cipher.dispose();
+
+    const avgFraction = totalChanged / (128 * 128);
+    expect(avgFraction).toBeGreaterThan(0.45);
+    expect(avgFraction).toBeLessThan(0.55);
+  });
+
   it('encrypts additional variable-text vectors (256-bit key)', () => {
     const key = hexToBytes('0000000000000000000000000000000000000000000000000000000000000000');
     const vectors = [

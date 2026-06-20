@@ -3,6 +3,7 @@ import { initSerpent } from './serpent';
 import { encrypt, decrypt } from './crypto';
 import type { EncryptedPayload } from './crypto';
 import { renderVisualization } from './visualization';
+import { renderAvalanche } from './avalanche';
 import { runBenchmark } from './benchmark';
 
 let lastPayload: EncryptedPayload | null = null;
@@ -92,6 +93,7 @@ async function init() {
     try {
       lastPayload = await encrypt(plainBytes, passBytes);
       ($('enc-output') as HTMLTextAreaElement).value = formatPayload(lastPayload, outputFormat);
+      ($('enc-to-dec') as HTMLButtonElement).disabled = false;
     } catch (e) {
       ($('enc-output') as HTMLTextAreaElement).value = `Error: ${e instanceof Error ? e.message : e}`;
     } finally {
@@ -125,6 +127,25 @@ async function init() {
     const prev = btn.textContent;
     btn.textContent = 'Copied!';
     setTimeout(() => { btn.textContent = prev; }, 1500);
+  });
+
+  // --- Load example ---
+  $('enc-example').addEventListener('click', () => {
+    ($('enc-pass') as HTMLInputElement).value = 'correct horse battery staple';
+    ($('enc-input') as HTMLTextAreaElement).value =
+      'Serpent ran all 32 rounds to encrypt this message in your browser — no plaintext ever left this tab.';
+    ($('enc-input') as HTMLTextAreaElement).focus();
+  });
+
+  // --- Send payload to Decrypt (one-click round trip) ---
+  $('enc-to-dec').addEventListener('click', () => {
+    if (!lastPayload) return;
+    // Always hand over the canonical base64 payload — hex view is display-only.
+    ($('dec-input') as HTMLTextAreaElement).value = formatPayload(lastPayload, 'base64');
+    ($('dec-pass') as HTMLInputElement).value = ($('enc-pass') as HTMLInputElement).value;
+    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    $('decrypt-panel').scrollIntoView({ behavior: reduceMotion ? 'auto' : 'smooth', block: 'center' });
+    ($('dec-btn') as HTMLButtonElement).focus();
   });
 
   // --- Decrypt ---
@@ -171,6 +192,9 @@ async function init() {
 
   // --- Visualization ---
   renderVisualization($('vis-container'));
+
+  // --- Avalanche effect ---
+  renderAvalanche($('avalanche-container'));
 
   // --- Benchmark ---
   $('bench-btn').addEventListener('click', async () => {
