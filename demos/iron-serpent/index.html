@@ -155,24 +155,31 @@
               <input type="password" id="enc-pass" placeholder="Enter passphrase" autocomplete="off" />
               <button type="button" id="enc-pass-toggle" class="icon-btn" title="Toggle visibility" aria-label="Toggle passphrase visibility">&#x1F441;</button>
             </div>
+            <div id="pass-strength" class="pass-strength hidden">
+              <div class="pass-strength-bar" aria-hidden="true"><div id="pass-strength-fill"></div></div>
+              <p id="pass-strength-text" role="status" aria-live="polite"></p>
+            </div>
           </div>
           <div class="field">
             <label for="enc-input">Plaintext</label>
             <textarea id="enc-input" rows="5" placeholder="Enter text to encrypt…"></textarea>
           </div>
-          <button id="enc-btn" class="primary-btn" disabled>Encrypt (full 32 rounds)</button>
+          <button id="enc-btn" class="primary-btn" title="Ctrl+Enter" disabled>Encrypt (full 32 rounds)</button>
           <div class="field">
-            <label>
-              Output
-              <span class="toggle-group">
-                <button id="enc-fmt-b64" class="fmt-btn active">Base64</button>
-                <button id="enc-fmt-hex" class="fmt-btn">Hex</button>
+            <div class="field-head">
+              <label for="enc-output">Output</label>
+              <span class="toggle-group" role="group" aria-label="Output format">
+                <button type="button" id="enc-fmt-b64" class="fmt-btn active" aria-pressed="true">Base64</button>
+                <button type="button" id="enc-fmt-hex" class="fmt-btn" aria-pressed="false">Hex</button>
               </span>
-              <button id="enc-copy" class="icon-btn" title="Copy to clipboard" aria-label="Copy output to clipboard">&#x1F4CB;</button>
-            </label>
+              <button type="button" id="enc-copy" class="icon-btn" title="Copy to clipboard" aria-label="Copy output to clipboard">&#x1F4CB;</button>
+            </div>
             <textarea id="enc-output" rows="8" readonly placeholder="Encrypted payload will appear here…"></textarea>
           </div>
-          <button type="button" id="enc-to-dec" class="ghost-btn full" disabled>Send this payload to Decrypt &#x2192;</button>
+          <div class="payload-actions">
+            <button type="button" id="enc-to-dec" class="ghost-btn" disabled>Send this payload to Decrypt &#x2192;</button>
+            <button type="button" id="enc-download" class="ghost-btn" disabled>Download payload (.json)</button>
+          </div>
           <details class="info-box">
             <summary>Argon2id Parameters</summary>
             <ul>
@@ -186,7 +193,11 @@
         </div>
 
         <div class="panel" id="decrypt-panel">
-          <h2>Decrypt</h2>
+          <div class="panel-head">
+            <h2>Decrypt</h2>
+            <button type="button" id="dec-load-file" class="ghost-btn" title="Load an EncryptedPayload .json file">Load payload file…</button>
+            <input type="file" id="dec-file-input" class="hidden" accept=".json,application/json" aria-hidden="true" tabindex="-1" />
+          </div>
           <div class="field">
             <label for="dec-pass">Passphrase</label>
             <div class="password-field">
@@ -198,10 +209,13 @@
             <label for="dec-input">Encrypted Payload (JSON)</label>
             <textarea id="dec-input" rows="8" placeholder="Paste EncryptedPayload JSON here…"></textarea>
           </div>
-          <button id="dec-btn" class="primary-btn" disabled>Decrypt (full 32 rounds)</button>
+          <button id="dec-btn" class="primary-btn" title="Ctrl+Enter" disabled>Decrypt (full 32 rounds)</button>
           <div id="auth-badge" class="badge hidden" role="status" aria-live="assertive"></div>
           <div class="field">
-            <label for="dec-output">Decrypted Output</label>
+            <div class="field-head">
+              <label for="dec-output">Decrypted Output</label>
+              <button type="button" id="dec-copy" class="icon-btn" title="Copy to clipboard" aria-label="Copy decrypted output to clipboard">&#x1F4CB;</button>
+            </div>
             <textarea id="dec-output" rows="5" readonly placeholder="Decrypted text will appear here…"></textarea>
           </div>
         </div>
@@ -223,6 +237,20 @@
           output bits change. A result near 50% is exactly what good diffusion looks like.
         </p>
         <div id="avalanche-container"></div>
+      </section>
+
+      <!-- CTR mode explainer -->
+      <section id="ctr-section">
+        <h2>CTR Mode: Block Cipher &#x2192; Stream Cipher</h2>
+        <p class="bench-note">
+          <strong>How does a cipher that can only encrypt 16-byte blocks handle a message of any
+          length?</strong> In CTR (Counter) mode, Serpent never encrypts your message at all.
+          It encrypts a <em>counter block</em> — the nonce, then nonce+1, then nonce+2… — to
+          produce a keystream, and the plaintext is simply XORed against it. Edit the message
+          or nonce below and watch the keystream change. This is the exact construction the
+          Encrypt panel above uses.
+        </p>
+        <div id="ctr-container"></div>
       </section>
 
       <!-- Benchmark -->

@@ -10,9 +10,11 @@ https://systemslibrarian.github.io/crypto-lab-iron-serpent/
 
 ## What the Demo Does
 
-- **Encrypt/Decrypt**: Enter text and a passphrase to encrypt with Serpent-256-CTR, authenticated with HMAC-SHA256 (Encrypt-then-MAC)
-- **Key Derivation**: Argon2id transforms passphrases into 256-bit keys (time=3, mem=64MiB, parallelism=1)
+- **Encrypt/Decrypt**: Enter text and a passphrase to encrypt with Serpent-256-CTR, authenticated with HMAC-SHA256 (Encrypt-then-MAC). Payloads can be downloaded as `.json` and loaded back for cross-session round trips
+- **Key Derivation**: Argon2id transforms passphrases into 256-bit keys (time=3, mem=64MiB, parallelism=1), with a live passphrase-strength estimate (charset + Diceware word models)
 - **Round Visualization**: Animated SVG comparing Serpent's 32 rounds vs AES's 10/12/14 rounds, with attack frontier markers
+- **Avalanche Effect**: Flip any single input bit of a 128-bit block and watch ~50% of Serpent's output bits change (Strict Avalanche Criterion)
+- **CTR Mode Explorer**: Interactive walkthrough of how a 16-byte block cipher becomes a stream cipher — counter blocks → keystream → XOR, byte by byte. The construction shown is verified byte-for-byte against the real `SerpentCtr` in the test suite
 - **Benchmark**: Live Serpent-256-CTR vs AES-256-GCM throughput comparison (MB/s)
 - **Attribution**: About section covering the designers, Israeli cryptographic lineage, and AES competition history
 

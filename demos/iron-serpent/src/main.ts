@@ -4,7 +4,9 @@ import { encrypt, decrypt } from './crypto';
 import type { EncryptedPayload } from './crypto';
 import { renderVisualization } from './visualization';
 import { renderAvalanche } from './avalanche';
+import { renderCtrExplainer } from './ctr-explainer';
 import { runBenchmark } from './benchmark';
+import { estimateStrength } from './passphrase-strength';
 
 let lastPayload: EncryptedPayload | null = null;
 let outputFormat: 'base64' | 'hex' = 'base64';
@@ -35,6 +37,32 @@ function setTheme(theme: 'dark' | 'light') {
 function toHexString(b64: string): string {
   const binary = atob(b64);
   return Array.from(binary, (c) => c.charCodeAt(0).toString(16).padStart(2, '0')).join('');
+}
+
+/** Copy text to the clipboard with visible success/failure feedback on the button. */
+async function copyWithFeedback(btn: HTMLButtonElement, text: string): Promise<void> {
+  const prev = btn.textContent;
+  try {
+    await navigator.clipboard.writeText(text);
+    btn.textContent = 'Copied!';
+  } catch {
+    btn.textContent = 'Copy failed';
+  }
+  setTimeout(() => { btn.textContent = prev; }, 1500);
+}
+
+/** Trigger the primary button when Ctrl+Enter (or Cmd+Enter) is pressed inside a panel field. */
+function wireSubmitShortcut(fieldIds: string[], buttonId: string): void {
+  for (const id of fieldIds) {
+    $(id).addEventListener('keydown', (e) => {
+      const key = e as KeyboardEvent;
+      if (key.key === 'Enter' && (key.ctrlKey || key.metaKey)) {
+        key.preventDefault();
+        const btn = $(buttonId) as HTMLButtonElement;
+        if (!btn.disabled) btn.click();
+      }
+    });
+  }
 }
 
 function formatPayload(p: EncryptedPayload, fmt: 'base64' | 'hex'): string {
@@ -77,6 +105,30 @@ async function init() {
     });
   }
 
+  // --- Passphrase strength meter ---
+  const passInput = $('enc-pass') as HTMLInputElement;
+  passInput.addEventListener('input', () => {
+    const wrap = $('pass-strength');
+    const fill = $('pass-strength-fill');
+    const text = $('pass-strength-text');
+    if (!passInput.value) {
+      wrap.classList.add('hidden');
+      return;
+    }
+    const est = estimateStrength(passInput.value);
+    wrap.classList.remove('hidden');
+    fill.style.width = `${Math.min(100, (est.bits / 100) * 100)}%`;
+    fill.dataset.score = String(est.score);
+    text.textContent = est.warning
+      ? est.warning
+      : `~${est.bits} bits · ${est.label} · ${est.crackTime} to crack at 10,000 Argon2id guesses/second`;
+    text.classList.toggle('warn', Boolean(est.warning) || est.score < 2);
+  });
+
+  // --- Keyboard shortcuts ---
+  wireSubmitShortcut(['enc-pass', 'enc-input'], 'enc-btn');
+  wireSubmitShortcut(['dec-pass', 'dec-input'], 'dec-btn');
+
   // --- Encrypt ---
   $('enc-btn').addEventListener('click', async () => {
     const pass = ($('enc-pass') as HTMLInputElement).value;
@@ -94,6 +146,7 @@ async function init() {
       lastPayload = await encrypt(plainBytes, passBytes);
       ($('enc-output') as HTMLTextAreaElement).value = formatPayload(lastPayload, outputFormat);
       ($('enc-to-dec') as HTMLButtonElement).disabled = false;
+      ($('enc-download') as HTMLButtonElement).disabled = false;
     } catch (e) {
       ($('enc-output') as HTMLTextAreaElement).value = `Error: ${e instanceof Error ? e.message : e}`;
     } finally {
@@ -105,33 +158,57 @@ async function init() {
   });
 
   // --- Format toggle ---
-  $('enc-fmt-b64').addEventListener('click', () => {
-    outputFormat = 'base64';
-    $('enc-fmt-b64').classList.add('active');
-    $('enc-fmt-hex').classList.remove('active');
+  const setFormat = (fmt: 'base64' | 'hex') => {
+    outputFormat = fmt;
+    for (const [id, active] of [['enc-fmt-b64', fmt === 'base64'], ['enc-fmt-hex', fmt === 'hex']] as const) {
+      $(id).classList.toggle('active', active);
+      $(id).setAttribute('aria-pressed', String(active));
+    }
     if (lastPayload) ($('enc-output') as HTMLTextAreaElement).value = formatPayload(lastPayload, outputFormat);
-  });
-  $('enc-fmt-hex').addEventListener('click', () => {
-    outputFormat = 'hex';
-    $('enc-fmt-hex').classList.add('active');
-    $('enc-fmt-b64').classList.remove('active');
-    if (lastPayload) ($('enc-output') as HTMLTextAreaElement).value = formatPayload(lastPayload, outputFormat);
-  });
+  };
+  $('enc-fmt-b64').addEventListener('click', () => setFormat('base64'));
+  $('enc-fmt-hex').addEventListener('click', () => setFormat('hex'));
 
   // --- Copy ---
-  $('enc-copy').addEventListener('click', async () => {
+  $('enc-copy').addEventListener('click', () => {
     const output = ($('enc-output') as HTMLTextAreaElement).value;
-    if (!output) return;
-    await navigator.clipboard.writeText(output);
-    const btn = $('enc-copy') as HTMLButtonElement;
-    const prev = btn.textContent;
-    btn.textContent = 'Copied!';
-    setTimeout(() => { btn.textContent = prev; }, 1500);
+    if (output) copyWithFeedback($('enc-copy') as HTMLButtonElement, output);
+  });
+  $('dec-copy').addEventListener('click', () => {
+    const output = ($('dec-output') as HTMLTextAreaElement).value;
+    if (output) copyWithFeedback($('dec-copy') as HTMLButtonElement, output);
+  });
+
+  // --- Download payload ---
+  $('enc-download').addEventListener('click', () => {
+    if (!lastPayload) return;
+    // Always download the canonical base64 payload — that's what Decrypt accepts.
+    const blob = new Blob([formatPayload(lastPayload, 'base64')], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'iron-serpent-payload.json';
+    a.click();
+    URL.revokeObjectURL(url);
+  });
+
+  // --- Load payload from file ---
+  const fileInput = $('dec-file-input') as HTMLInputElement;
+  $('dec-load-file').addEventListener('click', () => fileInput.click());
+  fileInput.addEventListener('change', async () => {
+    const file = fileInput.files?.[0];
+    if (!file) return;
+    ($('dec-input') as HTMLTextAreaElement).value = await file.text();
+    fileInput.value = '';
+    ($('dec-pass') as HTMLInputElement).focus();
   });
 
   // --- Load example ---
   $('enc-example').addEventListener('click', () => {
     ($('enc-pass') as HTMLInputElement).value = 'correct horse battery staple';
+    // Fire the input event so the strength meter reacts to the programmatic fill —
+    // it will (correctly) flag this famous xkcd passphrase as well-known.
+    $('enc-pass').dispatchEvent(new Event('input'));
     ($('enc-input') as HTMLTextAreaElement).value =
       'Serpent ran all 32 rounds to encrypt this message in your browser — no plaintext ever left this tab.';
     ($('enc-input') as HTMLTextAreaElement).focus();
@@ -195,6 +272,9 @@ async function init() {
 
   // --- Avalanche effect ---
   renderAvalanche($('avalanche-container'));
+
+  // --- CTR mode explainer ---
+  renderCtrExplainer($('ctr-container'));
 
   // --- Benchmark ---
   $('bench-btn').addEventListener('click', async () => {

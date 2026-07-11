@@ -241,6 +241,28 @@ describe('Serpent-256-CTR', () => {
     );
   });
 
+  it('rejects the wrong passphrase as an authentication failure, not garbage output', async () => {
+    const payload = await encrypt(
+      new TextEncoder().encode('Only the right passphrase may pass.'),
+      new TextEncoder().encode('right passphrase')
+    );
+
+    await expect(
+      decrypt(payload, new TextEncoder().encode('wrong passphrase'))
+    ).rejects.toThrow('Authentication failed — ciphertext has been tampered with');
+  });
+
+  it('round-trips through the full pipeline with the correct passphrase', async () => {
+    const message = 'Full pipeline: Argon2id → HKDF → Serpent-256-CTR → HMAC-SHA256.';
+    const payload = await encrypt(
+      new TextEncoder().encode(message),
+      new TextEncoder().encode('a passphrase with adequate length')
+    );
+
+    const plaintext = await decrypt(payload, new TextEncoder().encode('a passphrase with adequate length'));
+    expect(new TextDecoder().decode(plaintext)).toBe(message);
+  });
+
   it('rejects malformed payload fields before KDF/decryption', async () => {
     await expect(
       decrypt(

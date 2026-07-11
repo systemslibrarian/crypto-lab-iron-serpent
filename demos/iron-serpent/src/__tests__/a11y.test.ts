@@ -15,6 +15,7 @@ import { resolve } from 'node:path';
 import axe from 'axe-core';
 import { initSerpent } from '../serpent';
 import { renderAvalanche } from '../avalanche';
+import { renderCtrExplainer } from '../ctr-explainer';
 
 const AXE_OPTIONS: axe.RunOptions = {
   // jsdom has no layout engine, so contrast cannot be measured here.
@@ -47,6 +48,14 @@ describe('Accessibility (axe-core)', () => {
     await initSerpent();
     document.body.innerHTML = '<main></main>';
     renderAvalanche(document.querySelector('main')!);
+    const results = await axe.run(document.querySelector('main')!, AXE_OPTIONS);
+    expect(formatViolations(results.violations)).toBe('');
+  });
+
+  it('rendered CTR explainer panel has no detectable violations', async () => {
+    await initSerpent();
+    document.body.innerHTML = '<main></main>';
+    renderCtrExplainer(document.querySelector('main')!);
     const results = await axe.run(document.querySelector('main')!, AXE_OPTIONS);
     expect(formatViolations(results.violations)).toBe('');
   });
