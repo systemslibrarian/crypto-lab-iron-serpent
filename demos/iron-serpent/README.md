@@ -33,7 +33,10 @@ npm run build
 ## Test
 
 ```bash
-npm test
+npm test        # unit + a11y (vitest, official AES-submission vectors, axe-core)
+npm run test:e2e  # real-browser E2E (Playwright): encrypt/decrypt round trip,
+                  # tamper rejection, axe with color-contrast (both themes),
+                  # desktop + mobile layout checks
 ```
 
 ## Serpent Implementation Source
