@@ -35,7 +35,8 @@ jobs:
 
       # Real-browser E2E against the production build: full encrypt/decrypt
       # round trip, CTR explorer, axe with color-contrast, mobile layout.
-      - run: npx playwright install --with-deps chromium
+      # WebKit is required — the mobile project emulates iPhone 13.
+      - run: npx playwright install --with-deps chromium webkit
       - run: npm run test:e2e
 
       - uses: actions/upload-artifact@v7
