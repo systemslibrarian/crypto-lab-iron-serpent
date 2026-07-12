@@ -132,13 +132,17 @@
 <!-- END crypto-lab shared header -->
     <div id="app">
       <main>
-      <header>
-        <button type="button" id="theme-toggle" class="theme-toggle" aria-label="Switch to light mode">🌙</button>
-        <h1>&#x1F40D; Serpent-256</h1>
-        <p class="subtitle">AES Finalist — 32 Rounds of Conservative Security</p>
-        <p class="attribution">
-          Designed by Eli Biham (Technion, Israel) · Ross Anderson (Cambridge) · Lars Knudsen (DTU)
-        </p>
+      <button type="button" id="theme-toggle" class="theme-toggle" aria-label="Switch to light mode">🌙</button>
+      <header class="cl-hero">
+        <div class="cl-hero-main">
+          <h1 class="cl-hero-title">&#x1F40D; Iron Serpent</h1>
+          <p class="cl-hero-sub">Serpent-256-CTR · Argon2id · HMAC-SHA256 · encrypt-then-MAC</p>
+          <p class="cl-hero-desc">Encrypt and decrypt with a passphrase-derived key, then watch the block cipher's diffusion, its CTR keystream, and its security margin come apart under the hood.</p>
+        </div>
+        <aside class="cl-hero-why" aria-label="Why it matters">
+          <span class="cl-hero-why-label">WHY IT MATTERS</span>
+          <p class="cl-hero-why-text">Real secrecy needs more than a strong cipher: a weak passphrase, a reused nonce, or a missing MAC each breaks the whole scheme. Seeing these pieces work together is how you learn to trust — or distrust — an encryption tool.</p>
+        </aside>
       </header>
       <div id="init-status" class="status-banner" role="status" aria-live="polite">Initializing Serpent-256 WASM engine…</div>
 
