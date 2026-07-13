@@ -18,6 +18,23 @@ async function waitForEngine(page: Page): Promise<void> {
   await expect(page.locator('#init-status')).toHaveText('Serpent-256 engine ready.', { timeout: 15_000 });
 }
 
+/**
+ * The advanced exhibits (round visualizer, security margin, avalanche, CTR,
+ * benchmark) start locked behind the guided tour. Do the encrypt→decrypt round
+ * trip to unlock them, then reveal, so panel-level tests can reach the content.
+ */
+async function unlockExhibits(page: Page): Promise<void> {
+  await page.fill('#enc-pass', PASSPHRASE);
+  await page.fill('#enc-input', MESSAGE);
+  await page.click('#enc-btn');
+  await expect(page.locator('#enc-output')).toHaveValue(/"version"/, { timeout: 30_000 });
+  await page.click('#enc-to-dec');
+  await page.click('#dec-btn');
+  await expect(page.locator('#auth-badge')).toHaveText('✓ Authenticated', { timeout: 30_000 });
+  await page.click('#tour-reveal');
+  await expect(page.locator('#advanced-exhibits')).toBeVisible();
+}
+
 test.describe('encrypt / decrypt round trip', () => {
   test('encrypts, sends to decrypt, and authenticates', async ({ page }) => {
     await waitForEngine(page);
@@ -96,6 +113,7 @@ test.describe('encrypt / decrypt round trip', () => {
 test.describe('CTR nonce-reuse demo', () => {
   test('reusing a nonce shows CT1 XOR CT2 equals PT1 XOR PT2', async ({ page }) => {
     await waitForEngine(page);
+    await unlockExhibits(page);
 
     await page.check('#ctr-reuse-on');
     await expect(page.locator('#ctr-reuse-body')).toBeVisible();
@@ -108,6 +126,7 @@ test.describe('CTR nonce-reuse demo', () => {
 test.describe('interactive panels', () => {
   test('CTR explorer renders blocks and reacts to nonce changes', async ({ page }) => {
     await waitForEngine(page);
+    await unlockExhibits(page);
 
     // Default 24-char message → 2 counter blocks.
     await expect(page.locator('.ctr-block')).toHaveCount(2);
@@ -126,6 +145,7 @@ test.describe('interactive panels', () => {
 
   test('avalanche panel shows ~50% diffusion', async ({ page }) => {
     await waitForEngine(page);
+    await unlockExhibits(page);
 
     await expect(page.locator('.aval-cell')).toHaveCount(128);
     const stat = await page.locator('#aval-stat').textContent();
@@ -133,6 +153,27 @@ test.describe('interactive panels', () => {
     // SAC: a healthy single-sample result lands well inside 64 ± 25.
     expect(changed).toBeGreaterThan(39);
     expect(changed).toBeLessThan(89);
+  });
+
+  test('exhibits are locked until the round trip, then the round visualizer steps 1..32', async ({ page }) => {
+    await waitForEngine(page);
+
+    // Advanced exhibits start hidden; the reveal button is disabled.
+    await expect(page.locator('#advanced-exhibits')).toBeHidden();
+    await expect(page.locator('#tour-reveal')).toBeDisabled();
+
+    await unlockExhibits(page);
+
+    // Round visualizer is now reachable and shows round 1 of 32.
+    await expect(page.locator('#rounds-container .sv-counter')).toContainText('Round 1 of 32');
+    // Step forward two rounds and confirm the counter advances.
+    const next = page.locator('#rounds-container').getByRole('button', { name: /Next round/ });
+    await next.click();
+    await next.click();
+    await expect(page.locator('#rounds-container .sv-counter')).toContainText('Round 3 of 32');
+
+    // Diffusion tracker reports how far one flipped input bit has spread.
+    await expect(page.locator('.sv-diffusion')).toContainText('Diffusion after round');
   });
 
   test('passphrase strength meter warns on well-known passphrases', async ({ page }) => {
@@ -158,6 +199,8 @@ test.describe('layout and accessibility', () => {
   for (const theme of ['dark', 'light'] as const) {
     test(`axe (including color-contrast) passes in ${theme} theme`, async ({ page }) => {
       await waitForEngine(page);
+      // Reveal the advanced exhibits so their contrast is audited too.
+      await unlockExhibits(page);
       await page.evaluate((t) => document.documentElement.setAttribute('data-theme', t), theme);
 
       const results = await new AxeBuilder({ page }).analyze();

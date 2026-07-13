@@ -43,6 +43,25 @@ function el<K extends keyof HTMLElementTagNameMap>(tag: K, cls?: string, text?: 
   return node;
 }
 
+/** ASCII rendering of a 16-byte block for the text-entry mode. */
+function asciiFromHex(hex: string): string {
+  let s = '';
+  for (let i = 0; i < hex.length; i += 2) {
+    const b = parseInt(hex.slice(i, i + 2), 16);
+    if (b === 0) continue;
+    s += b >= 0x20 && b < 0x7f ? String.fromCharCode(b) : '.';
+  }
+  return s;
+}
+
+/** Pad an ASCII string to a 16-byte block and return its 32-char hex. */
+function asciiToBlockHex(s: string): string {
+  const src = new TextEncoder().encode(s);
+  const b = new Uint8Array(16);
+  b.set(src.subarray(0, 16));
+  return bytesToHex(b);
+}
+
 export function renderAvalanche(container: HTMLElement): void {
   container.innerHTML = '';
 
@@ -50,16 +69,33 @@ export function renderAvalanche(container: HTMLElement): void {
   const controls = el('div', 'avalanche-controls');
 
   const blockField = el('div', 'avalanche-field');
-  const blockLabel = el('label', undefined, 'Plaintext block (16 bytes · 32 hex chars)');
+  // Input-format toggle so a coder can type ASCII instead of hand-writing hex.
+  const modeWrap = el('div', 'sv-mode');
+  const modeText = el('button', 'sv-mode-btn active', 'Type text');
+  modeText.type = 'button';
+  modeText.setAttribute('aria-pressed', 'true');
+  const modeHex = el('button', 'sv-mode-btn', 'Enter hex');
+  modeHex.type = 'button';
+  modeHex.setAttribute('aria-pressed', 'false');
+  modeWrap.append(modeText, modeHex);
+  blockField.appendChild(modeWrap);
+
+  const blockLabel = el('label', undefined, 'Plaintext block (16 bytes)');
   blockLabel.htmlFor = 'aval-block';
   blockField.appendChild(blockLabel);
   const blockInput = el('input');
   blockInput.type = 'text';
   blockInput.id = 'aval-block';
-  blockInput.maxLength = 32;
+  blockInput.maxLength = 16;
   blockInput.spellcheck = false;
-  blockInput.value = DEFAULT_BLOCK_HEX;
+  blockInput.value = asciiFromHex(DEFAULT_BLOCK_HEX);
   blockField.appendChild(blockInput);
+  // The hex the cipher actually sees, kept in sync with whichever mode is active.
+  let blockHex = DEFAULT_BLOCK_HEX;
+  let hexMode = false;
+  const hexEcho = el('p', 'sv-help');
+  hexEcho.id = 'aval-hex-echo';
+  blockField.appendChild(hexEcho);
 
   const randomBtn = el('button', 'icon-btn', 'Randomize');
   randomBtn.type = 'button';
@@ -82,6 +118,16 @@ export function renderAvalanche(container: HTMLElement): void {
 
   // --- Results ---
   const result = el('div', 'avalanche-result');
+
+  // Input block, shown as 128 bit-cells so "flip bit #N" points at a real cell.
+  const inputRow = el('div', 'avalanche-input');
+  inputRow.append(el('span', 'avalanche-ct-label', 'Input block bits (flipped bit highlighted)'));
+  const inputGrid = el('div', 'aval-input-grid');
+  inputGrid.id = 'aval-input-grid';
+  inputGrid.setAttribute('role', 'img');
+  inputRow.appendChild(inputGrid);
+  result.appendChild(inputRow);
+
   const rowA = el('div', 'avalanche-ct');
   rowA.append(el('span', 'avalanche-ct-label', 'Original ciphertext'));
   const ctA = el('code', 'avalanche-ct-value');
@@ -109,10 +155,27 @@ export function renderAvalanche(container: HTMLElement): void {
   const cipher = new Serpent256();
   cipher.loadKey(DEMO_KEY);
 
+  // Keep blockHex in sync with whichever input mode is active. Returns false
+  // (and shows guidance) if the hex-mode field isn't yet a full 16-byte block.
+  const syncBlockHex = (): boolean => {
+    if (hexMode) {
+      const h = blockInput.value.trim().toLowerCase();
+      if (!/^[0-9a-f]{32}$/.test(h)) {
+        hexEcho.textContent = 'Enter exactly 32 hexadecimal characters (16 bytes).';
+        return false;
+      }
+      blockHex = h;
+    } else {
+      blockHex = asciiToBlockHex(blockInput.value);
+      hexEcho.textContent = `As hex: ${blockHex}`;
+    }
+    return true;
+  };
+
   const recompute = () => {
-    const hex = blockInput.value.trim().toLowerCase();
-    if (!/^[0-9a-f]{32}$/.test(hex)) {
+    if (!syncBlockHex()) {
       grid.innerHTML = '';
+      inputGrid.innerHTML = '';
       ctA.textContent = '—';
       ctB.textContent = '—';
       stat.textContent = 'Enter exactly 32 hexadecimal characters (16 bytes).';
@@ -124,9 +187,21 @@ export function renderAvalanche(container: HTMLElement): void {
     if (!Number.isFinite(bit)) bit = 0;
     bit = Math.max(0, Math.min(BLOCK_BITS - 1, bit));
 
-    const ptA = hexToBytes(hex);
+    const ptA = hexToBytes(blockHex);
     const ptB = ptA.slice();
     ptB[bit >> 3] ^= 0x80 >> (bit & 7);
+
+    // Input bit grid: show all 128 input bits, spotlight the one being flipped.
+    inputGrid.innerHTML = '';
+    inputGrid.setAttribute('aria-label', `Input block; bit ${bit} is flipped`);
+    for (let i = 0; i < BLOCK_BITS; i++) {
+      const on = (ptA[i >> 3] & (0x80 >> (i & 7))) !== 0;
+      let cls = on ? 'aval-in-cell on' : 'aval-in-cell';
+      if (i === bit) cls += ' flip';
+      const cell = el('span', cls);
+      cell.title = i === bit ? `Bit ${i} (flipped)` : `Bit ${i}: ${on ? 1 : 0}`;
+      inputGrid.appendChild(cell);
+    }
 
     const outA = cipher.encryptBlock(ptA);
     const outB = cipher.encryptBlock(ptB);
@@ -150,12 +225,33 @@ export function renderAvalanche(container: HTMLElement): void {
     stat.className = 'avalanche-stat';
   };
 
+  const setMode = (hex: boolean) => {
+    hexMode = hex;
+    modeText.classList.toggle('active', !hex);
+    modeHex.classList.toggle('active', hex);
+    modeText.setAttribute('aria-pressed', String(!hex));
+    modeHex.setAttribute('aria-pressed', String(hex));
+    if (hex) {
+      blockLabel.textContent = 'Plaintext block (16 bytes · 32 hex chars)';
+      blockInput.maxLength = 32;
+      blockInput.value = blockHex;
+    } else {
+      blockLabel.textContent = 'Plaintext block (16 bytes)';
+      blockInput.maxLength = 16;
+      blockInput.value = asciiFromHex(blockHex);
+    }
+    recompute();
+  };
+  modeText.addEventListener('click', () => setMode(false));
+  modeHex.addEventListener('click', () => setMode(true));
+
   blockInput.addEventListener('input', recompute);
   bitInput.addEventListener('input', recompute);
   randomBtn.addEventListener('click', () => {
     const rnd = new Uint8Array(16);
     crypto.getRandomValues(rnd);
-    blockInput.value = bytesToHex(rnd);
+    blockHex = bytesToHex(rnd);
+    blockInput.value = hexMode ? blockHex : asciiFromHex(blockHex);
     recompute();
   });
 

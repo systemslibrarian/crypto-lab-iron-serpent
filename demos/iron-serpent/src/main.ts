@@ -5,6 +5,7 @@ import type { EncryptedPayload } from './crypto';
 import { renderVisualization } from './visualization';
 import { renderAvalanche } from './avalanche';
 import { renderCtrExplainer } from './ctr-explainer';
+import { renderRoundVisualizer } from './round-visualizer';
 import { runBenchmark } from './benchmark';
 import { estimateStrength } from './passphrase-strength';
 
@@ -117,6 +118,41 @@ async function init() {
     status.classList.add('error');
     return;
   }
+
+  // --- Guided tour / progressive disclosure -------------------------------
+  // The advanced exhibits start locked. A clean encrypt→decrypt round trip
+  // marks step 1 complete and unlocks the reveal; the reveal button (or an
+  // impatient click) opens the analysis panels. Sequencing keeps a newcomer
+  // from meeting an entire AEAD scheme plus four analysis panels at once.
+  let exhibitsRevealed = false;
+  const revealExhibits = (scroll: boolean) => {
+    if (exhibitsRevealed) return;
+    exhibitsRevealed = true;
+    const adv = $('advanced-exhibits');
+    adv.classList.remove('exhibits-locked');
+    adv.removeAttribute('aria-hidden');
+    const revealBtn = $('tour-reveal') as HTMLButtonElement;
+    revealBtn.disabled = true;
+    revealBtn.textContent = 'Exhibits unlocked ✓';
+    $('tour-step-3').classList.add('done');
+    if (scroll) {
+      const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      $('rounds-section').scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'start' });
+    }
+  };
+  const completeRoundTrip = () => {
+    $('tour-step-1').classList.add('done');
+    $('tour-step-1').classList.remove('active');
+    const step2 = $('tour-step-2');
+    step2.classList.add('active');
+    $('tour-step-3').classList.add('active');
+    const hint = $('tour-hint-1');
+    if (hint) hint.textContent = 'Done ✓';
+    const revealBtn = $('tour-reveal') as HTMLButtonElement;
+    revealBtn.disabled = false;
+    revealBtn.textContent = 'Unlock and explore the exhibits →';
+  };
+  ($('tour-reveal') as HTMLButtonElement).addEventListener('click', () => revealExhibits(true));
 
   // --- Password toggle ---
   for (const prefix of ['enc', 'dec']) {
@@ -290,6 +326,8 @@ async function init() {
       // A clean decrypt means this JSON is a known-good payload — offer the tamper lab.
       lastGoodDecryptPayload = payload;
       tamperLab.classList.remove('hidden');
+      // The core round trip just succeeded — advance the guided tour.
+      completeRoundTrip();
     } catch (e) {
       ($('dec-output') as HTMLTextAreaElement).value = '';
       const msg = e instanceof Error ? e.message : String(e);
@@ -344,6 +382,9 @@ async function init() {
     );
     await runDecrypt();
   });
+
+  // --- Serpent round visualizer ---
+  renderRoundVisualizer($('rounds-container'));
 
   // --- Visualization ---
   renderVisualization($('vis-container'));

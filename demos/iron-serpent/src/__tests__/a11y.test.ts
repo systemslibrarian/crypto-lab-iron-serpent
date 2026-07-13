@@ -16,6 +16,7 @@ import axe from 'axe-core';
 import { initSerpent } from '../serpent';
 import { renderAvalanche } from '../avalanche';
 import { renderCtrExplainer } from '../ctr-explainer';
+import { renderRoundVisualizer } from '../round-visualizer';
 
 const AXE_OPTIONS: axe.RunOptions = {
   // jsdom has no layout engine, so contrast cannot be measured here.
@@ -56,6 +57,13 @@ describe('Accessibility (axe-core)', () => {
     await initSerpent();
     document.body.innerHTML = '<main></main>';
     renderCtrExplainer(document.querySelector('main')!);
+    const results = await axe.run(document.querySelector('main')!, AXE_OPTIONS);
+    expect(formatViolations(results.violations)).toBe('');
+  });
+
+  it('rendered Serpent round visualizer has no detectable violations', async () => {
+    document.body.innerHTML = '<main></main>';
+    renderRoundVisualizer(document.querySelector('main')!);
     const results = await axe.run(document.querySelector('main')!, AXE_OPTIONS);
     expect(formatViolations(results.violations)).toBe('');
   });

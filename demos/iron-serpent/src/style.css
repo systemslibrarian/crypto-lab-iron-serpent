@@ -247,6 +247,10 @@ details > summary:focus-visible {
   margin-bottom: 1rem;
 }
 .primary-btn:hover { opacity: 0.9; }
+/* In light theme --gold is #9a6700; white text on it is a borderline 4.5:1, and
+   the opacity:0.9 hover blends it lighter over the page — dropping below AA when
+   a button is hovered during an axe run. Use a solid darker gold on hover instead. */
+html[data-theme='light'] .primary-btn:hover { opacity: 1; background-color: #7a5200; }
 .primary-btn:disabled { opacity: 0.4; cursor: not-allowed; }
 
 .icon-btn {
@@ -780,6 +784,236 @@ section h2 {
 }
 
 .hidden { display: none !important; }
+
+/* --- Guided tour / progressive disclosure --- */
+#tour-card {
+  background-color: var(--surface);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--gold);
+  border-radius: 0 var(--radius) var(--radius) 0;
+  padding: 1.25rem 1.5rem;
+}
+#tour-card h2 { border-bottom: none; padding-bottom: 0; margin-bottom: 0.5rem; }
+.tour-lead { font-size: 0.9rem; color: var(--text-muted); margin-bottom: 1rem; max-width: 70ch; }
+.tour-steps { list-style: none; display: flex; flex-direction: column; gap: 0.9rem; padding: 0; }
+.tour-step {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0.9rem;
+  align-items: start;
+  font-size: 0.9rem;
+  color: var(--text-muted);
+}
+.tour-step strong { color: var(--text); }
+.tour-step em { color: var(--gold); font-style: normal; font-weight: 600; }
+.tour-num {
+  display: grid;
+  place-items: center;
+  width: 1.9rem;
+  height: 1.9rem;
+  border-radius: 50%;
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+  font-weight: 700;
+  font-size: 0.9rem;
+  flex: 0 0 auto;
+}
+.tour-step.active .tour-num { border-color: var(--gold); color: var(--gold); }
+.tour-step.done .tour-num { background-color: var(--green); border-color: var(--green); color: #fff; }
+.tour-hint { display: block; font-size: 0.78rem; color: var(--gold); margin-top: 0.25rem; font-weight: 600; }
+#tour-reveal { margin-top: 0.6rem; }
+
+/* Locked exhibits: hidden until the round trip unlocks them. */
+.exhibits-locked { display: none; }
+
+/* --- Serpent round visualizer --- */
+#rounds-container {
+  background-color: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.25rem;
+}
+.sv-controls { display: flex; flex-wrap: wrap; gap: 1rem; align-items: flex-end; margin-bottom: 1rem; }
+.sv-field { display: flex; flex-direction: column; gap: 0.3rem; min-width: min(320px, 100%); }
+.sv-field label { font-size: 0.8rem; color: var(--text-muted); }
+.sv-help { font-size: 0.75rem; color: var(--text-muted); margin: 0; }
+.sv-mode { display: inline-flex; }
+.sv-mode-btn {
+  background-color: var(--bg);
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+  padding: 0.25rem 0.7rem;
+  font-size: 0.75rem;
+  cursor: pointer;
+}
+.sv-mode-btn:first-child { border-radius: var(--radius) 0 0 var(--radius); }
+.sv-mode-btn:last-child { border-radius: 0 var(--radius) var(--radius) 0; border-left: none; }
+.sv-mode-btn.active { background-color: var(--gold); color: #000; border-color: var(--gold); }
+html[data-theme='light'] .sv-mode-btn.active { color: #fff; }
+
+.sv-transport { display: flex; flex-wrap: wrap; align-items: center; gap: 0.6rem; margin-bottom: 0.75rem; }
+.sv-transport .primary-btn { width: auto; margin-bottom: 0; }
+.sv-counter { font-weight: 700; color: var(--gold); font-family: monospace; font-size: 0.9rem; min-width: 14rem; }
+
+.sv-track { display: grid; grid-template-columns: repeat(32, 1fr); gap: 3px; margin-bottom: 1rem; }
+.sv-tick { height: 8px; border-radius: 2px; background-color: var(--border); }
+.sv-tick.done { background-color: var(--green); }
+.sv-tick.active { background-color: var(--gold); }
+
+.sv-stage {
+  background-color: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 0.85rem 1rem;
+  margin-bottom: 0.85rem;
+}
+.sv-stage-head { font-size: 0.85rem; font-weight: 700; color: var(--gold); margin-bottom: 0.4rem; }
+.sv-stage-desc { font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.6rem; line-height: 1.5; }
+.sv-op { font-size: 0.75rem; color: var(--text-muted); font-style: italic; margin: 0.35rem 0; }
+
+.sv-bytes { display: flex; flex-wrap: wrap; gap: 4px; }
+.sv-byte {
+  font-family: 'SF Mono', 'Fira Code', monospace;
+  font-size: 0.8rem;
+  padding: 0.2rem 0.35rem;
+  border-radius: 3px;
+  background-color: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--text);
+}
+.sv-byte.changed { background-color: var(--gold); color: #000; border-color: var(--gold); font-weight: 700; }
+/* #000 on light --gold (#9a6700) is 4.31:1 — just under AA. White clears it. */
+html[data-theme='light'] .sv-byte.changed { color: #fff; }
+
+.sv-lookup { display: flex; flex-wrap: wrap; align-items: center; gap: 1rem; margin: 0.75rem 0; }
+.sv-lookup-arrow { font-family: monospace; font-weight: 700; color: var(--gold); font-size: 0.9rem; }
+.sv-nib {
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 0.6rem 0.85rem;
+  background-color: var(--surface);
+  text-align: center;
+}
+.sv-nib-in { border-left: 3px solid var(--blue); }
+.sv-nib-out { border-left: 3px solid var(--gold); }
+.sv-nib-title { font-size: 0.72rem; color: var(--text-muted); margin-bottom: 0.35rem; }
+.sv-nib-bits { display: flex; gap: 3px; justify-content: center; }
+.sv-nib-bit {
+  font-family: monospace;
+  font-weight: 700;
+  width: 1.4rem;
+  height: 1.6rem;
+  display: grid;
+  place-items: center;
+  border-radius: 3px;
+  background-color: var(--bg);
+  border: 1px solid var(--border);
+  color: var(--text);
+}
+.sv-nib-val { font-family: monospace; font-size: 0.75rem; color: var(--text-muted); margin-top: 0.35rem; }
+
+.sv-slider { display: flex; flex-direction: column; gap: 0.3rem; margin: 0.5rem 0 0.75rem; max-width: 26rem; }
+.sv-slider label { font-size: 0.78rem; color: var(--text-muted); }
+.sv-slider input[type='range'] { width: 100%; accent-color: var(--gold); cursor: pointer; }
+
+.sv-diffusion {
+  font-size: 0.85rem;
+  color: var(--text);
+  padding: 0.7rem 0.9rem;
+  background-color: var(--bg);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--gold);
+  border-radius: 0 var(--radius) var(--radius) 0;
+  margin-top: 0.5rem;
+}
+.sv-diffusion strong { color: var(--gold); }
+.sv-diff-grid {
+  display: grid;
+  grid-template-columns: repeat(32, 1fr);
+  gap: 2px;
+  margin-top: 0.6rem;
+  max-width: 480px;
+}
+.sv-diff-cell { aspect-ratio: 1; border-radius: 2px; background-color: var(--border); }
+.sv-diff-cell.on { background-color: var(--gold); }
+@media (max-width: 480px) { .sv-diff-grid { grid-template-columns: repeat(16, 1fr); } }
+
+.sv-note { font-size: 0.82rem; color: var(--text-muted); margin: 1rem 0; line-height: 1.55; }
+.sv-note strong { color: var(--text); }
+.sv-note em { color: var(--gold); font-style: normal; }
+
+.sv-sbox-table { margin-top: 0.5rem; }
+.sv-sbox-grid { display: flex; flex-wrap: wrap; gap: 1rem; margin-top: 0.75rem; }
+.sv-sbox-col { display: flex; flex-direction: column; gap: 2px; }
+.sv-sbox-name { font-weight: 700; color: var(--gold); font-size: 0.8rem; margin-bottom: 0.2rem; }
+.sv-sbox-cell { font-family: monospace; font-size: 0.72rem; color: var(--text-muted); }
+
+/* --- Avalanche input bit grid --- */
+.avalanche-input { margin-bottom: 0.75rem; }
+.aval-input-grid {
+  display: grid;
+  grid-template-columns: repeat(32, 1fr);
+  gap: 2px;
+  margin-top: 0.4rem;
+  max-width: 480px;
+}
+.aval-in-cell {
+  aspect-ratio: 1;
+  border-radius: 2px;
+  background-color: var(--border);
+  border: 1px solid transparent;
+}
+.aval-in-cell.on { background-color: var(--text-muted); }
+.aval-in-cell.flip { background-color: var(--red); border-color: var(--text); }
+@media (max-width: 480px) { .aval-input-grid { grid-template-columns: repeat(16, 1fr); } }
+
+/* --- HKDF key-separation mini-diagram --- */
+.hkdf-box { margin-bottom: 1rem; }
+.hkdf-lead, .hkdf-note { font-size: 0.8rem; color: var(--text-muted); line-height: 1.55; margin: 0.5rem 0; }
+.hkdf-lead em, .hkdf-note strong { color: var(--text); }
+.hkdf-note strong { color: var(--gold); }
+.hkdf-diagram {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  margin: 0.75rem 0;
+  padding: 0.75rem;
+  background-color: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+.hkdf-node {
+  display: flex;
+  flex-direction: column;
+  padding: 0.4rem 0.7rem;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  font-family: monospace;
+  font-weight: 700;
+  font-size: 0.8rem;
+  color: var(--text);
+}
+.hkdf-node-sub { font-family: inherit; font-weight: 400; font-size: 0.68rem; color: var(--text-muted); }
+.hkdf-master { border-left: 3px solid var(--gold); }
+.hkdf-enc { border-left: 3px solid var(--blue); }
+.hkdf-mac { border-left: 3px solid var(--green); }
+.hkdf-fan { display: flex; flex-direction: column; gap: 0.35rem; }
+.hkdf-arrow { font-family: monospace; font-size: 0.72rem; color: var(--gold); font-weight: 700; }
+.hkdf-outs { display: flex; flex-direction: column; gap: 0.5rem; }
+html[data-theme='light'] .hkdf-mac { border-left-color: #1a7f37; }
+
+/* --- Benchmark takeaway banner (the conclusion, not a caveat) --- */
+.bench-takeaway {
+  margin-bottom: 0.9rem;
+  padding: 0.75rem 1rem;
+  background-color: color-mix(in oklab, var(--gold) 12%, var(--surface));
+  border: 1px solid var(--gold);
+  border-radius: var(--radius);
+  font-size: 0.9rem;
+  color: var(--text);
+}
+.bench-takeaway strong { color: var(--gold); }
 
 .about-grid {
   display: grid;

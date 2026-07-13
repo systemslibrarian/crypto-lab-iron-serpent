@@ -205,6 +205,31 @@
               everything decryption needs except your passphrase.
             </p>
           </details>
+          <details class="info-box hkdf-box">
+            <summary>Why two keys? HKDF and key separation</summary>
+            <p class="hkdf-lead">
+              Argon2id gives us <em>one</em> 256-bit masterKey. But the cipher and the MAC must
+              never share a key — reusing one key for two different algorithms can let one leak
+              the other. So HKDF fans that single masterKey out into two independent subkeys:
+            </p>
+            <div class="hkdf-diagram" role="img" aria-label="masterKey splits via HKDF into encKey for Serpent and macKey for HMAC">
+              <span class="hkdf-node hkdf-master">masterKey<span class="hkdf-node-sub">256-bit, from Argon2id</span></span>
+              <span class="hkdf-fan" aria-hidden="true">
+                <span class="hkdf-arrow">→ HKDF “enc” →</span>
+                <span class="hkdf-arrow">→ HKDF “mac” →</span>
+              </span>
+              <span class="hkdf-outs">
+                <span class="hkdf-node hkdf-enc">encKey<span class="hkdf-node-sub">Serpent-256-CTR</span></span>
+                <span class="hkdf-node hkdf-mac">macKey<span class="hkdf-node-sub">HMAC-SHA256</span></span>
+              </span>
+            </div>
+            <p class="hkdf-note">
+              <strong>What if we reused one key for both?</strong> Encrypting and authenticating with
+              the same key ties the two constructions together, and a weakness in how they interact
+              can expose the key or forge tags. HKDF makes them cryptographically independent — the
+              same reason you never reuse a password across accounts.
+            </p>
+          </details>
           <div class="field">
             <div class="field-head">
               <label for="enc-output">Output</label>
@@ -279,6 +304,64 @@
             </p>
           </div>
         </div>
+      </section>
+
+      <!-- Guided tour: gates the advanced exhibits behind the core round trip -->
+      <section id="tour-card" aria-labelledby="tour-title">
+        <div class="tour-inner">
+          <h2 id="tour-title">Start here: a 3-step path</h2>
+          <p class="tour-lead">
+            This lab has one core interaction and several deeper exhibits. Do them in order and the
+            whole scheme builds up piece by piece — no need to face it all at once.
+          </p>
+          <ol class="tour-steps">
+            <li id="tour-step-1" class="tour-step active">
+              <span class="tour-num">1</span>
+              <div>
+                <strong>Encrypt, then decrypt.</strong> Above, type a passphrase and a message,
+                hit <em>Encrypt</em>, then <em>Send this payload to Decrypt →</em> and
+                <em>Decrypt</em>. A green <em>✓ Authenticated</em> badge means the round trip worked.
+                <span class="tour-hint" id="tour-hint-1">Do this to unlock the next step.</span>
+              </div>
+            </li>
+            <li id="tour-step-2" class="tour-step">
+              <span class="tour-num">2</span>
+              <div>
+                <strong>Break it.</strong> The <em>Tamper</em> lab appears under Decrypt after the
+                round trip. Flip one bit and watch the HMAC refuse to decrypt — this is why we
+                verify <em>before</em> we decrypt.
+              </div>
+            </li>
+            <li id="tour-step-3" class="tour-step">
+              <span class="tour-num">3</span>
+              <div>
+                <strong>See why each piece exists.</strong> The exhibits below open up the internals:
+                inside Serpent’s 32 rounds, how a block cipher becomes a stream cipher, why a nonce
+                must never repeat, and what "security margin" really measures.
+                <button type="button" id="tour-reveal" class="ghost-btn" disabled>
+                  Finish the round trip to unlock the exhibits
+                </button>
+              </div>
+            </li>
+          </ol>
+        </div>
+      </section>
+
+      <!-- Everything below is progressively revealed after the round trip. -->
+      <div id="advanced-exhibits" class="exhibits-locked" aria-hidden="true">
+
+      <!-- Serpent round visualizer -->
+      <section id="rounds-section">
+        <h2>Inside Serpent: the 32 rounds, step by step</h2>
+        <p class="bench-note">
+          The buttons above say "full 32 rounds," but those rounds have been a black box — until now.
+          Serpent turns plaintext into ciphertext by repeating one recipe 32 times:
+          <strong>mix in a round key → substitute every 4-bit group through an S-box (confusion) →
+          shuffle the bits with a linear transform (diffusion)</strong>. Step through one 128-bit
+          block below and watch a single flipped input bit avalanche across the whole block. Every
+          value shown is from a spec-accurate Serpent verified against the official AES test vectors.
+        </p>
+        <div id="rounds-container"></div>
       </section>
 
       <!-- Visualization -->
@@ -370,6 +453,10 @@
           <div class="bench-progress-bar" role="progressbar" aria-label="Benchmark progress" aria-valuemin="0" aria-valuemax="100"><div id="bench-progress-fill"></div></div>
         </div>
         <div id="bench-results" class="hidden">
+          <p class="bench-takeaway" role="note">
+            Takeaway: <strong>Slower here = more rounds + no hardware AES-NI, NOT weaker.</strong>
+            This bar chart measures your browser’s hardware, not the strength of either cipher.
+          </p>
           <p class="bench-meta" id="bench-meta">Average throughput across <span id="bench-meta-iters">10</span> timed runs · <span id="bench-meta-size">1 MB</span> random plaintext per run · full round count each block</p>
           <div class="bench-row">
             <span class="bench-label">Serpent-256-CTR <span class="bench-sublabel">(32 rounds/block · WASM, no hardware accel)</span></span>
@@ -392,6 +479,8 @@
           </blockquote>
         </div>
       </section>
+
+      </div><!-- /#advanced-exhibits -->
 
       <!-- About Serpent -->
       <section id="about-section">
