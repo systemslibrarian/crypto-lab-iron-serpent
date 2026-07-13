@@ -74,6 +74,14 @@ function hexRow(label: string, bytes: Uint8Array, opts?: { hot?: (i: number) => 
 
 const DEMO_KEY = hexToBytes('00112233445566778899aabbccddeeff102132435465768798a9bacbdcedfe0f');
 const DEFAULT_MESSAGE = 'Attack at dawn. -Serpent';
+const DEFAULT_MESSAGE_2 = 'Retreat at dusk. -Serpent';
+
+/** ASCII-printable rendering of a byte: the char if printable, else '·'. */
+function asciiPrintable(bytes: Uint8Array): string {
+  let s = '';
+  for (const b of bytes) s += b >= 0x20 && b < 0x7f ? String.fromCharCode(b) : '·';
+  return s;
+}
 
 export function renderCtrExplainer(container: HTMLElement): void {
   container.innerHTML = '';
@@ -121,9 +129,51 @@ export function renderCtrExplainer(container: HTMLElement): void {
     'Decryption regenerates the identical keystream and XORs it off again, so ' +
     '<code>decryptBlock</code> is never used in CTR mode. This is also why a ' +
     '<strong>nonce must never be reused</strong> with the same key: two messages would share ' +
-    'a keystream, and XORing their ciphertexts together would cancel it out entirely.';
+    'a keystream, and XORing their ciphertexts together would cancel it out entirely. ' +
+    'The toggle below lets you watch exactly that happen.';
 
   container.append(controls, blocksWrap, stat, note);
+
+  // --- Nonce-reuse demonstration ---------------------------------------------
+  // The warning above says reusing a nonce cancels the keystream. This makes it
+  // demonstrable: encrypt TWO different messages under the SAME nonce (and key),
+  // then show that ct1 XOR ct2 equals pt1 XOR pt2 — the keystream is gone.
+  const reuseWrap = el('div', 'ctr-reuse');
+
+  const reuseToggleWrap = el('div', 'ctr-reuse-toggle');
+  const reuseCheckbox = el('input');
+  reuseCheckbox.type = 'checkbox';
+  reuseCheckbox.id = 'ctr-reuse-on';
+  const reuseToggleLabel = el('label', 'ctr-reuse-toggle-label',
+    'Show the danger: reuse this nonce for a second message');
+  reuseToggleLabel.htmlFor = 'ctr-reuse-on';
+  reuseToggleWrap.append(reuseCheckbox, reuseToggleLabel);
+
+  const reuseBody = el('div', 'ctr-reuse-body hidden');
+  reuseBody.id = 'ctr-reuse-body';
+
+  const msg2Field = el('div', 'avalanche-field');
+  const msg2Label = el('label', undefined, `Second message, SAME nonce (up to ${MAX_MESSAGE_BYTES} chars)`);
+  msg2Label.htmlFor = 'ctr-message-2';
+  const msg2Input = el('input');
+  msg2Input.type = 'text';
+  msg2Input.id = 'ctr-message-2';
+  msg2Input.maxLength = MAX_MESSAGE_BYTES;
+  msg2Input.spellcheck = false;
+  msg2Input.value = DEFAULT_MESSAGE_2;
+  msg2Field.append(msg2Label, msg2Input);
+
+  const reuseRows = el('div', 'ctr-reuse-rows');
+  reuseRows.id = 'ctr-reuse-rows';
+
+  const reuseStat = el('div', 'avalanche-stat warn');
+  reuseStat.id = 'ctr-reuse-stat';
+  reuseStat.setAttribute('role', 'status');
+  reuseStat.setAttribute('aria-live', 'polite');
+
+  reuseBody.append(msg2Field, reuseRows, reuseStat);
+  reuseWrap.append(reuseToggleWrap, reuseBody);
+  container.append(reuseWrap);
 
   const cipher = new Serpent256();
   cipher.loadKey(DEMO_KEY);
@@ -191,11 +241,81 @@ export function renderCtrExplainer(container: HTMLElement): void {
     stat.className = 'avalanche-stat';
   };
 
-  msgInput.addEventListener('input', recompute);
-  nonceInput.addEventListener('input', recompute);
+  /** Real CTR keystream-XOR encryption of `pt` under `nonce`, block by block. */
+  const ctrEncrypt = (nonce: Uint8Array, pt: Uint8Array): Uint8Array => {
+    const out = new Uint8Array(pt.length);
+    const nBlocks = Math.ceil(pt.length / BLOCK_SIZE);
+    for (let i = 0; i < nBlocks; i++) {
+      const keystream = cipher.encryptBlock(counterBlock(nonce, i));
+      const chunk = pt.subarray(i * BLOCK_SIZE, (i + 1) * BLOCK_SIZE);
+      out.set(xorBytes(chunk, keystream.subarray(0, chunk.length)), i * BLOCK_SIZE);
+    }
+    return out;
+  };
+
+  const recomputeReuse = () => {
+    if (!reuseCheckbox.checked) return;
+    const nonceHex = nonceInput.value.trim().toLowerCase();
+    if (!/^[0-9a-f]{32}$/.test(nonceHex)) {
+      reuseRows.innerHTML = '';
+      reuseStat.textContent = 'Fix the nonce above (32 hex chars) to run the reuse demo.';
+      return;
+    }
+    const m1 = msgInput.value;
+    const m2 = msg2Input.value;
+    if (m1.length === 0 || m2.length === 0) {
+      reuseRows.innerHTML = '';
+      reuseStat.textContent = 'Enter both messages to see the keystream cancel out.';
+      return;
+    }
+
+    const nonce = hexToBytes(nonceHex);
+    const pt1 = new TextEncoder().encode(m1.slice(0, MAX_MESSAGE_BYTES));
+    const pt2 = new TextEncoder().encode(m2.slice(0, MAX_MESSAGE_BYTES));
+    // Compare over the shared prefix length — where both keystreams line up.
+    const n = Math.min(pt1.length, pt2.length);
+    const p1 = pt1.subarray(0, n);
+    const p2 = pt2.subarray(0, n);
+
+    // Same nonce, same key → identical keystream for both messages.
+    const ct1 = ctrEncrypt(nonce, p1);
+    const ct2 = ctrEncrypt(nonce, p2);
+    const ctXor = xorBytes(ct1, ct2);   // keystream cancels: ct1⊕ct2
+    const ptXor = xorBytes(p1, p2);     // …equals pt1⊕pt2 exactly
+
+    reuseRows.innerHTML = '';
+    reuseRows.appendChild(hexRow('Ciphertext 1', ct1));
+    reuseRows.appendChild(hexRow('Ciphertext 2', ct2));
+    reuseRows.appendChild(el('div', 'ctr-op', '⊕ XOR the two ciphertexts — the shared keystream cancels'));
+    reuseRows.appendChild(hexRow('CT1 ⊕ CT2', ctXor));
+    reuseRows.appendChild(hexRow('PT1 ⊕ PT2', ptXor));
+    const asciiRow = el('div', 'ctr-reuse-ascii');
+    asciiRow.append(
+      el('span', 'ctr-row-label', 'PT1 ⊕ PT2 as text'),
+      el('code', 'ctr-hex', asciiPrintable(ptXor)),
+    );
+    reuseRows.appendChild(asciiRow);
+
+    // These two rows are byte-for-byte identical — assert it, don't just claim it.
+    const identical = bytesToHex(ctXor) === bytesToHex(ptXor);
+    reuseStat.innerHTML = identical
+      ? '<strong>CT1 ⊕ CT2 = PT1 ⊕ PT2.</strong> The keystream is gone. An attacker who never had the key ' +
+        'now holds the XOR of your two plaintexts — and with any crib or known structure can peel both apart. ' +
+        'This is why a nonce must be unique per message.'
+      : 'Unexpected mismatch — this should never happen with a correct CTR construction.';
+  };
+
+  msgInput.addEventListener('input', () => { recompute(); recomputeReuse(); });
+  nonceInput.addEventListener('input', () => { recompute(); recomputeReuse(); });
+  msg2Input.addEventListener('input', recomputeReuse);
+  reuseCheckbox.addEventListener('change', () => {
+    reuseBody.classList.toggle('hidden', !reuseCheckbox.checked);
+    recomputeReuse();
+  });
   randomBtn.addEventListener('click', () => {
     randomizeNonce();
     recompute();
+    recomputeReuse();
   });
 
   recompute();

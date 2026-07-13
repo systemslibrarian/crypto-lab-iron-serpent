@@ -313,6 +313,41 @@ details > summary:focus-visible {
 .badge.failed { background-color: #3d1215; color: var(--red); border: 1px solid #da3633; }
 .badge.hidden { display: none; }
 
+/* --- Tamper lab (Decrypt panel) --- */
+.tamper-lab {
+  margin-top: 1rem;
+  padding: 1rem;
+  background-color: var(--bg);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--red);
+  border-radius: 0 var(--radius) var(--radius) 0;
+}
+.tamper-title {
+  font-size: 0.95rem;
+  color: var(--red);
+  margin-bottom: 0.4rem;
+}
+.tamper-intro {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  margin-bottom: 0.75rem;
+}
+.tamper-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+}
+.tamper-actions .ghost-btn { flex: 1 1 auto; }
+.tamper-explain {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  line-height: 1.5;
+}
+.tamper-explain strong { color: var(--text); }
+.tamper-explain.warn { color: var(--text); }
+.tamper-explain.warn strong { color: var(--red); }
+
 .info-box {
   background-color: var(--bg);
   border: 1px solid var(--border);
@@ -323,6 +358,57 @@ details > summary:focus-visible {
 }
 .info-box summary { cursor: pointer; font-weight: 600; }
 .info-box ul { margin-top: 0.5rem; padding-left: 1.2rem; }
+
+/* --- Encrypt pipeline diagram --- */
+.pipeline { margin-bottom: 1rem; }
+.pipeline-steps {
+  list-style: none;
+  margin: 0.75rem 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+.pipeline-steps li {
+  display: grid;
+  grid-template-columns: auto auto 1fr;
+  align-items: baseline;
+  gap: 0.4rem 0.6rem;
+}
+.pipe-stage {
+  font-family: 'SF Mono', 'Fira Code', monospace;
+  font-size: 0.78rem;
+  color: var(--text);
+  font-weight: 600;
+  overflow-wrap: anywhere;
+  min-width: 0;
+}
+.pipe-arrow { color: var(--gold); font-weight: 700; }
+.pipe-desc { font-size: 0.8rem; color: var(--text-muted); line-height: 1.5; }
+.pipe-desc em { color: var(--text); font-style: normal; font-weight: 600; }
+.pipe-field {
+  font-family: 'SF Mono', 'Fira Code', monospace;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--gold);
+  background-color: color-mix(in oklab, var(--gold) 14%, transparent);
+  border: 1px solid color-mix(in oklab, var(--gold) 35%, transparent);
+  border-radius: 4px;
+  padding: 0.05rem 0.35rem;
+  white-space: nowrap;
+}
+.pipeline-fields {
+  margin-top: 0.9rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--border);
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  line-height: 1.6;
+}
+@media (max-width: 480px) {
+  .pipeline-steps li { grid-template-columns: 1fr; }
+  .pipe-arrow { display: none; }
+}
 
 section { margin-bottom: 2.5rem; }
 
@@ -595,6 +681,103 @@ section h2 {
 }
 .ctr-note code { color: var(--gold); }
 .ctr-note strong { color: var(--text); }
+
+/* --- CTR nonce-reuse demonstration --- */
+.ctr-reuse {
+  margin-top: 1rem;
+  border-top: 1px solid var(--border);
+  padding-top: 1rem;
+}
+.ctr-reuse-toggle {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.ctr-reuse-toggle input[type='checkbox'] {
+  width: auto;
+  min-width: 1.1rem;
+  height: 1.1rem;
+  accent-color: var(--red);
+  cursor: pointer;
+}
+.ctr-reuse-toggle-label {
+  font-size: 0.9rem;
+  color: var(--text);
+  cursor: pointer;
+  font-weight: 600;
+}
+.ctr-reuse-body {
+  margin-top: 1rem;
+  padding: 1rem;
+  background-color: var(--bg);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--red);
+  border-radius: 0 var(--radius) var(--radius) 0;
+}
+.ctr-reuse-body .avalanche-field { margin-bottom: 1rem; }
+.ctr-reuse-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  margin-bottom: 1rem;
+}
+.ctr-reuse-ascii {
+  display: flex;
+  align-items: baseline;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  margin-top: 0.25rem;
+}
+.ctr-reuse-ascii .ctr-row-label { min-width: 10rem; color: var(--text-muted); }
+.ctr-reuse-ascii code { color: var(--red); word-break: break-all; }
+@media (max-width: 640px) {
+  .ctr-reuse-ascii .ctr-row-label { min-width: 0; width: 100%; }
+}
+
+/* --- Glossary term chips (first-use definitions) --- */
+/* A dotted underline signals "hover/focus for a definition"; the tooltip is
+   delivered via aria-label (screen readers) + a CSS bubble from data-tip
+   (sighted mouse/keyboard users). Colour is not the only cue — the underline is. */
+.term {
+  border-bottom: 1px dotted currentColor;
+  cursor: help;
+  position: relative;
+}
+.term:focus-visible {
+  outline: 2px solid var(--gold);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+.term::after {
+  content: attr(data-tip);
+  /* display:none when idle so the absolutely-positioned bubble contributes
+     nothing to page scrollWidth (a visible-but-hidden bubble still expands
+     horizontal overflow on narrow viewports). */
+  display: none;
+  position: absolute;
+  left: 0;
+  bottom: 125%;
+  z-index: 20;
+  width: max-content;
+  max-width: min(18rem, calc(100vw - 2rem));
+  padding: 0.5rem 0.7rem;
+  background-color: var(--surface);
+  color: var(--text);
+  border: 1px solid var(--gold);
+  border-radius: var(--radius);
+  font-size: 0.78rem;
+  font-weight: 400;
+  line-height: 1.45;
+  font-style: normal;
+  white-space: normal;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.35);
+  pointer-events: none;
+}
+.term:hover::after,
+.term:focus-visible::after,
+.term:focus::after {
+  display: block;
+}
 
 .hidden { display: none !important; }
 

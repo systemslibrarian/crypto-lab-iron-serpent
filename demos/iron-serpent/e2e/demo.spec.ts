@@ -61,6 +61,48 @@ test.describe('encrypt / decrypt round trip', () => {
     await expect(page.locator('#auth-badge')).toHaveText('✗ Authentication Failed', { timeout: 30_000 });
     await expect(page.locator('#dec-output')).toHaveValue('');
   });
+
+  test('one-click tamper lab flips a byte and fires the failed badge', async ({ page }) => {
+    await waitForEngine(page);
+
+    // Round-trip to a clean authenticated decrypt so the tamper lab appears.
+    await page.fill('#enc-pass', PASSPHRASE);
+    await page.fill('#enc-input', MESSAGE);
+    await page.click('#enc-btn');
+    await expect(page.locator('#enc-output')).toHaveValue(/"version"/, { timeout: 30_000 });
+    await page.click('#enc-to-dec');
+    await page.click('#dec-btn');
+    await expect(page.locator('#auth-badge')).toHaveText('✓ Authenticated', { timeout: 30_000 });
+
+    // The tamper lab is now offered.
+    await expect(page.locator('#tamper-lab')).toBeVisible();
+
+    // Flip one byte of the ciphertext → HMAC catches it.
+    await page.click('#tamper-ct');
+    await expect(page.locator('#auth-badge')).toHaveText('✗ Authentication Failed', { timeout: 30_000 });
+    await expect(page.locator('#dec-output')).toHaveValue('');
+
+    // Restore → authenticates again and recovers the plaintext.
+    await page.click('#tamper-restore');
+    await expect(page.locator('#auth-badge')).toHaveText('✓ Authenticated', { timeout: 30_000 });
+    await expect(page.locator('#dec-output')).toHaveValue(MESSAGE);
+
+    // Flipping the MAC tag itself also fails authentication.
+    await page.click('#tamper-mac');
+    await expect(page.locator('#auth-badge')).toHaveText('✗ Authentication Failed', { timeout: 30_000 });
+  });
+});
+
+test.describe('CTR nonce-reuse demo', () => {
+  test('reusing a nonce shows CT1 XOR CT2 equals PT1 XOR PT2', async ({ page }) => {
+    await waitForEngine(page);
+
+    await page.check('#ctr-reuse-on');
+    await expect(page.locator('#ctr-reuse-body')).toBeVisible();
+    // The panel asserts the keystream cancelled — success wording, not the error wording.
+    await expect(page.locator('#ctr-reuse-stat')).toContainText('CT1 ⊕ CT2 = PT1 ⊕ PT2');
+    await expect(page.locator('#ctr-reuse-rows')).toContainText('PT1 ⊕ PT2');
+  });
 });
 
 test.describe('interactive panels', () => {

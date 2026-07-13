@@ -169,6 +169,42 @@
             <textarea id="enc-input" rows="5" placeholder="Enter text to encrypt…"></textarea>
           </div>
           <button id="enc-btn" class="primary-btn" title="Ctrl+Enter" disabled>Encrypt (full 32 rounds)</button>
+          <details class="pipeline info-box" id="enc-pipeline">
+            <summary>What happens inside Encrypt (and where each output field comes from)</summary>
+            <ol class="pipeline-steps">
+              <li>
+                <span class="pipe-stage">Passphrase</span>
+                <span class="pipe-arrow" aria-hidden="true">&#x2192;</span>
+                <span class="pipe-desc">the secret you type. Never stored, never sent.</span>
+              </li>
+              <li>
+                <span class="pipe-stage">Argon2id(passphrase, <span class="pipe-field">salt</span>)</span>
+                <span class="pipe-arrow" aria-hidden="true">&#x2192;</span>
+                <span class="pipe-desc">a fresh random <span class="pipe-field">salt</span> is drawn, then Argon2id (64&nbsp;MiB, 3 passes) slowly stretches the passphrase into a 256-bit <em>masterKey</em>. The salt is saved so decryption can repeat this step.</span>
+              </li>
+              <li>
+                <span class="pipe-stage">HKDF(masterKey)</span>
+                <span class="pipe-arrow" aria-hidden="true">&#x2192;</span>
+                <span class="pipe-desc">splits the one masterKey into two independent keys — an <em>encKey</em> for the cipher and a separate <em>macKey</em> for the tag. Different jobs get different keys.</span>
+              </li>
+              <li>
+                <span class="pipe-stage">Serpent-256-CTR(encKey, <span class="pipe-field">nonce</span>)</span>
+                <span class="pipe-arrow" aria-hidden="true">&#x2192;</span>
+                <span class="pipe-desc">a fresh random <span class="pipe-field">nonce</span> seeds the counter; Serpent encrypts the counter to a keystream, XORed with your plaintext to make the <span class="pipe-field">ciphertext</span>.</span>
+              </li>
+              <li>
+                <span class="pipe-stage">HMAC-SHA256(macKey, salt&#8214;nonce&#8214;ciphertext)</span>
+                <span class="pipe-arrow" aria-hidden="true">&#x2192;</span>
+                <span class="pipe-desc">authenticates everything above into the <span class="pipe-field">mac</span> tag. Encrypt-then-MAC: the tag is computed <em>over the ciphertext</em>, so decryption can verify it before running Serpent.</span>
+              </li>
+            </ol>
+            <p class="pipeline-fields">
+              The JSON output packs exactly these results:
+              <span class="pipe-field">salt</span>, <span class="pipe-field">nonce</span>,
+              <span class="pipe-field">ciphertext</span>, and <span class="pipe-field">mac</span> —
+              everything decryption needs except your passphrase.
+            </p>
+          </details>
           <div class="field">
             <div class="field-head">
               <label for="enc-output">Output</label>
@@ -222,12 +258,42 @@
             </div>
             <textarea id="dec-output" rows="5" readonly placeholder="Decrypted text will appear here…"></textarea>
           </div>
+
+          <!-- Tamper lab: appears after a successful authenticated decrypt. -->
+          <div id="tamper-lab" class="tamper-lab hidden">
+            <h3 class="tamper-title">Tamper with this ciphertext</h3>
+            <p class="tamper-intro">
+              This payload just authenticated. Now corrupt it and watch the HMAC catch it.
+              Each button flips a single bit in the pasted payload and re-runs Decrypt —
+              exactly what an attacker on the wire would try.
+            </p>
+            <div class="tamper-actions">
+              <button type="button" id="tamper-ct" class="ghost-btn">Flip 1 byte of the ciphertext</button>
+              <button type="button" id="tamper-mac" class="ghost-btn">Flip 1 byte of the MAC</button>
+              <button type="button" id="tamper-restore" class="ghost-btn">Restore the intact payload</button>
+            </div>
+            <p id="tamper-explain" class="tamper-explain" role="status" aria-live="polite">
+              The HMAC is verified <strong>before</strong> Serpent ever runs. If one bit of the
+              ciphertext or the tag changes, verification fails and decryption is refused —
+              this is why we <strong>verify-then-decrypt</strong> (encrypt-then-MAC).
+            </p>
+          </div>
         </div>
       </section>
 
       <!-- Visualization -->
       <section id="vis-section">
         <h2>Security Margin Visualization</h2>
+        <p class="bench-note">
+          <strong>How to read this — and how NOT to.</strong> The coloured prefix on each bar is
+          the deepest round count that any published academic result has reached on a
+          <em>reduced-round</em> version of the cipher. It is <strong>not a countdown to being
+          broken.</strong> A reduced-round distinguisher on 12 of Serpent's 32 rounds does
+          <strong>not</strong> mean the full cipher is "37% cracked" — every cipher shown here
+          is unbroken at its full round count. The green remainder is the
+          <em>security margin</em>: rounds that no public attack comes near. A wider margin is a
+          hedge against <em>future</em> analysis, not a measure of how close today's cipher is to failing.
+        </p>
         <div id="vis-container"></div>
       </section>
 
@@ -238,7 +304,15 @@
           <strong>Strict Avalanche Criterion:</strong> a single-bit change to the input of a
           strong block cipher should flip about half of the output bits. Encrypt one 128-bit
           block below, flip a single input bit, and watch how many of Serpent-256's 128
-          output bits change. A result near 50% is exactly what good diffusion looks like.
+          output bits change. A result near 50% is exactly what good
+          <span class="term" tabindex="0" role="note" aria-label="Diffusion: how a cipher spreads the influence of each input bit across the whole output, so a tiny input change scrambles the entire block." data-tip="How a cipher spreads each input bit's influence across the whole output — one flipped bit should scramble the entire block.">diffusion</span>
+          looks like.
+          <br />
+          <strong>Why a public key here?</strong> This panel uses one fixed, published demo key —
+          secrecy isn't the point. We're watching <em>how the cipher scrambles bits</em>, and that
+          behaviour is identical no matter who knows the key. This is a single ECB block for
+          illustration, <em>not</em> how you'd encrypt real data — the secure workflow is the
+          Encrypt panel above, with a passphrase-derived key, a nonce, and a MAC.
         </p>
         <div id="avalanche-container"></div>
       </section>
@@ -249,8 +323,11 @@
         <p class="bench-note">
           <strong>How does a cipher that can only encrypt 16-byte blocks handle a message of any
           length?</strong> In CTR (Counter) mode, Serpent never encrypts your message at all.
-          It encrypts a <em>counter block</em> — the nonce, then nonce+1, then nonce+2… — to
-          produce a keystream, and the plaintext is simply XORed against it. Edit the message
+          It encrypts a <em>counter block</em> — the
+          <span class="term" tabindex="0" role="note" aria-label="Nonce: a number used once. A per-message value that seeds the counter so the same key produces a different keystream each time. Reusing one is catastrophic." data-tip="A 'number used once' — a per-message value that seeds the counter so the same key gives a fresh keystream each time. Reusing one breaks CTR.">nonce</span>,
+          then nonce+1, then nonce+2… — to produce a
+          <span class="term" tabindex="0" role="note" aria-label="Keystream: the pseudorandom bytes the cipher generates. XORing plaintext with the keystream produces ciphertext; XORing again recovers the plaintext." data-tip="The pseudorandom bytes the cipher generates. XOR plaintext with it to encrypt; XOR again to decrypt.">keystream</span>,
+          and the plaintext is simply XORed against it. Edit the message
           or nonce below and watch the keystream change. This is the exact construction the
           Encrypt panel above uses.
         </p>
@@ -307,8 +384,11 @@
             <span id="bench-ratio" class="bench-value">—</span>
           </div>
           <blockquote class="bench-callout">
-            "This performance gap is the price of Serpent's 2.7× security margin.
-            The AES committee chose speed. Serpent chose to survive."
+            Serpent runs more rounds than AES, and in this browser it runs them without the
+            AES-NI hardware AES enjoys — so it measures slower here. That extra work buys a
+            larger security margin, a hedge against future cryptanalysis. It does <strong>not</strong>
+            make Serpent "more secure" against any attack known today: both ciphers are unbroken
+            at full rounds. Margin is insurance, not a scoreboard.
           </blockquote>
         </div>
       </section>
@@ -325,14 +405,17 @@
               <li><strong>Ross Anderson</strong> — University of Cambridge, UK.
                 Security engineering researcher. Contributed the overall architecture and design philosophy.</li>
               <li><strong>Lars Knudsen</strong> — Technical University of Denmark (DTU).
-                Expert in integral and impossible differential cryptanalysis. Key contributor to the S-box design.</li>
+                Expert in integral and impossible differential cryptanalysis. Key contributor to the
+                <span class="term" tabindex="0" role="note" aria-label="S-box: substitution box. A small lookup table that replaces input bits with scrambled output bits — the nonlinear heart of a block cipher's confusion." data-tip="Substitution box: a small lookup table that swaps input bits for scrambled output bits — a cipher's core source of nonlinearity.">S-box</span>
+                design.</li>
             </ul>
           </div>
           <div class="about-card">
             <h3>Israeli Cryptographic Lineage</h3>
             <p>
               Eli Biham studied under <strong>Adi Shamir</strong> (the "S" in RSA) at the Weizmann Institute.
-              Together they developed <strong>differential cryptanalysis</strong> — the technique that broke DES
+              Together they developed
+              <strong><span class="term" tabindex="0" role="note" aria-label="Differential cryptanalysis: an attack that feeds a cipher pairs of inputs with a chosen difference and studies how that difference propagates, exposing statistical bias a good cipher must hide." data-tip="An attack that feeds a cipher input pairs with a chosen difference and tracks how it propagates — a good cipher must hide that pattern.">differential cryptanalysis</span></strong> — the technique that broke DES
               and reshaped how every modern block cipher is designed. Biham brought this deep understanding of
               attack mechanisms to Serpent's design, building a cipher specifically resistant to the techniques
               he himself had pioneered.

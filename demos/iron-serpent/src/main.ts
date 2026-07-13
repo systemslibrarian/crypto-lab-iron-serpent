@@ -10,6 +10,9 @@ import { estimateStrength } from './passphrase-strength';
 
 let lastPayload: EncryptedPayload | null = null;
 let outputFormat: 'base64' | 'hex' = 'base64';
+// The last payload that decrypted+authenticated cleanly, kept so the tamper lab
+// can flip a bit of a known-good payload and let the learner watch the MAC fire.
+let lastGoodDecryptPayload: EncryptedPayload | null = null;
 
 function $(id: string): HTMLElement {
   return document.getElementById(id)!;
@@ -37,6 +40,24 @@ function setTheme(theme: 'dark' | 'light') {
 function toHexString(b64: string): string {
   const binary = atob(b64);
   return Array.from(binary, (c) => c.charCodeAt(0).toString(16).padStart(2, '0')).join('');
+}
+
+/**
+ * Flip exactly one bit in a base64-encoded field and return the mutated base64.
+ * Decodes to bytes, XORs one bit of one byte, re-encodes — so the field stays
+ * valid base64 of the same length but its decoded content differs by a single bit.
+ * This is what the tamper lab uses to corrupt a real payload in place.
+ */
+function flipOneBitInBase64(b64: string): string {
+  const binary = atob(b64);
+  const bytes = new Uint8Array(binary.length);
+  for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+  const byteIndex = Math.floor(Math.random() * bytes.length);
+  const bitMask = 0x80 >> Math.floor(Math.random() * 8);
+  bytes[byteIndex] ^= bitMask;
+  let out = '';
+  for (let i = 0; i < bytes.length; i++) out += String.fromCharCode(bytes[i]);
+  return btoa(out);
 }
 
 /** Copy text to the clipboard with visible success/failure feedback on the button. */
@@ -192,6 +213,13 @@ async function init() {
     URL.revokeObjectURL(url);
   });
 
+  // The tamper lab is tied to the payload that last authenticated. Any time the
+  // decrypt input changes to something else, retire it until a fresh clean decrypt.
+  const resetTamperLab = () => {
+    lastGoodDecryptPayload = null;
+    $('tamper-lab').classList.add('hidden');
+  };
+
   // --- Load payload from file ---
   const fileInput = $('dec-file-input') as HTMLInputElement;
   $('dec-load-file').addEventListener('click', () => fileInput.click());
@@ -199,8 +227,16 @@ async function init() {
     const file = fileInput.files?.[0];
     if (!file) return;
     ($('dec-input') as HTMLTextAreaElement).value = await file.text();
+    resetTamperLab();
     fileInput.value = '';
     ($('dec-pass') as HTMLInputElement).focus();
+  });
+
+  ($('dec-input') as HTMLTextAreaElement).addEventListener('input', () => {
+    // Only reset if the user is hand-editing to a payload we no longer know is good.
+    if (!lastGoodDecryptPayload) return;
+    const current = ($('dec-input') as HTMLTextAreaElement).value;
+    if (current !== JSON.stringify(lastGoodDecryptPayload, null, 2)) resetTamperLab();
   });
 
   // --- Load example ---
@@ -220,13 +256,17 @@ async function init() {
     // Always hand over the canonical base64 payload — hex view is display-only.
     ($('dec-input') as HTMLTextAreaElement).value = formatPayload(lastPayload, 'base64');
     ($('dec-pass') as HTMLInputElement).value = ($('enc-pass') as HTMLInputElement).value;
+    resetTamperLab();
     const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     $('decrypt-panel').scrollIntoView({ behavior: reduceMotion ? 'auto' : 'smooth', block: 'center' });
     ($('dec-btn') as HTMLButtonElement).focus();
   });
 
   // --- Decrypt ---
-  $('dec-btn').addEventListener('click', async () => {
+  // Shared decrypt routine used by the Decrypt button AND the tamper lab, so a
+  // tampered payload runs the exact same verify-then-decrypt path.
+  const tamperLab = $('tamper-lab');
+  async function runDecrypt(): Promise<void> {
     const pass = ($('dec-pass') as HTMLInputElement).value;
     const input = ($('dec-input') as HTMLTextAreaElement).value;
     if (!pass || !input) return;
@@ -247,6 +287,9 @@ async function init() {
       resultBytes.fill(0);
       badge.textContent = '✓ Authenticated';
       badge.className = 'badge verified';
+      // A clean decrypt means this JSON is a known-good payload — offer the tamper lab.
+      lastGoodDecryptPayload = payload;
+      tamperLab.classList.remove('hidden');
     } catch (e) {
       ($('dec-output') as HTMLTextAreaElement).value = '';
       const msg = e instanceof Error ? e.message : String(e);
@@ -265,6 +308,41 @@ async function init() {
       btn.disabled = false;
       btn.textContent = 'Decrypt (full 32 rounds)';
     }
+  }
+  $('dec-btn').addEventListener('click', runDecrypt);
+
+  // --- Tamper lab: flip one bit of a known-good payload, then re-run decrypt ---
+  const tamperExplain = $('tamper-explain');
+  const setTamperExplain = (html: string, warn: boolean) => {
+    tamperExplain.innerHTML = html;
+    tamperExplain.classList.toggle('warn', warn);
+  };
+  // Flip a bit in one field of the last-good payload, drop it into the textarea,
+  // and re-run the real verify-then-decrypt path so the badge reacts for real.
+  const tamperField = async (field: 'ciphertext' | 'mac', label: string) => {
+    if (!lastGoodDecryptPayload) return;
+    const mutated: EncryptedPayload = { ...lastGoodDecryptPayload };
+    mutated[field] = flipOneBitInBase64(lastGoodDecryptPayload[field]);
+    ($('dec-input') as HTMLTextAreaElement).value = JSON.stringify(mutated, null, 2);
+    setTamperExplain(
+      `Flipped one bit of the <strong>${label}</strong>. The HMAC covers salt‖nonce‖ciphertext‖version, ` +
+      'so the recomputed tag no longer matches — verification fails and <strong>Serpent never runs</strong>. ' +
+      'This is exactly why we verify-then-decrypt.',
+      true,
+    );
+    await runDecrypt();
+  };
+  $('tamper-ct').addEventListener('click', () => tamperField('ciphertext', 'ciphertext'));
+  $('tamper-mac').addEventListener('click', () => tamperField('mac', 'MAC tag'));
+  $('tamper-restore').addEventListener('click', async () => {
+    if (!lastGoodDecryptPayload) return;
+    ($('dec-input') as HTMLTextAreaElement).value = JSON.stringify(lastGoodDecryptPayload, null, 2);
+    setTamperExplain(
+      'Restored the intact payload — the tag matches again, so verification passes and ' +
+      'Serpent decrypts it back to the original plaintext.',
+      false,
+    );
+    await runDecrypt();
   });
 
   // --- Visualization ---

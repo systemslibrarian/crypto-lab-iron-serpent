@@ -15,7 +15,16 @@ Iron Serpent is a browser demo for password-based symmetric encryption built aro
 
 **[systemslibrarian.github.io/crypto-lab-iron-serpent](https://systemslibrarian.github.io/crypto-lab-iron-serpent/)**
 
-The live demo lets you enter a passphrase and plaintext, produce an encrypted JSON payload, and decrypt that payload back in the browser. A **Load example** button seeds a sample message, and **Send this payload to Decrypt** wires the encrypt output straight into the decrypt panel for a one-click round trip. It also includes Base64 and Hex output controls, a benchmark panel with Data size and Iterations controls, an Argon2id parameters panel that shows the KDF settings used for key derivation, a security-margin visualization, and an interactive **Avalanche Effect** panel that flips a single input bit and shows how ~50% of Serpent-256's output bits change (the Strict Avalanche Criterion).
+The live demo lets you enter a passphrase and plaintext, produce an encrypted JSON payload, and decrypt that payload back in the browser. A **Load example** button seeds a sample message, and **Send this payload to Decrypt** wires the encrypt output straight into the decrypt panel for a one-click round trip. It also includes Base64 and Hex output controls, a benchmark panel with Data size and Iterations controls, an Argon2id parameters panel that shows the KDF settings used for key derivation, and a security-margin visualization.
+
+The demo is organized as a set of exhibits:
+
+1. **Encrypt / Decrypt** — the full password-based authenticated-encryption round trip. An expandable **Pipeline** diagram traces the real flow (passphrase → Argon2id with salt → masterKey → HKDF splits into encKey + macKey → Serpent-256-CTR keystream XOR → HMAC-SHA256), and labels which stage produces each `salt`, `nonce`, `ciphertext`, and `mac` field in the JSON output.
+2. **Tamper lab** — after a clean authenticated decrypt, one-click buttons flip a single bit of the ciphertext (or of the MAC tag) and re-run decryption, so you *watch* the `✗ Authentication Failed` badge fire. This shows why we verify-then-decrypt (encrypt-then-MAC): the HMAC catches the change before Serpent ever runs.
+3. **Security Margin Visualization** — round counts and unbroken margins for Serpent-256 vs AES, framed honestly: the coloured prefix is the deepest *reduced-round* academic result, **not** a countdown to being broken. Every cipher shown is unbroken at full round count; a wider margin is a hedge against future analysis, not a measure of how close a cipher is to failing.
+4. **Avalanche Effect** — flips a single input bit and shows how ~50% of Serpent-256's output bits change (the Strict Avalanche Criterion). Uses a deliberately public demo key: secrecy isn't the point here, diffusion is.
+5. **CTR Mode explainer** — byte-level counter/keystream/plaintext/ciphertext rows, plus a **reuse-this-nonce toggle** that encrypts two messages under the same nonce and shows `CT1 ⊕ CT2 = PT1 ⊕ PT2` — the shared keystream cancelling out, making the nonce-reuse danger demonstrable instead of merely asserted.
+6. **Performance Comparison** — Serpent-256-CTR (WASM) vs AES-256-GCM (AES-NI) throughput, with the caveat that this reflects browser throughput, not algorithmic speed or practical security.
 
 ## What Can Go Wrong
 
@@ -51,7 +60,7 @@ npm run dev
 
 ## Testing
 
-Run the test suite (Serpent-256 official AES test vectors, CTR round-trips, tamper detection, KDF/HMAC, the avalanche property, and automated axe-core accessibility checks) with:
+Run the test suite (Serpent-256 official AES test vectors, CTR round-trips, tamper detection, the interactive tamper lab, the CTR nonce-reuse cancellation, KDF/HMAC, the avalanche property, and automated axe-core accessibility checks in both light and dark themes) with:
 
 ```bash
 npm test

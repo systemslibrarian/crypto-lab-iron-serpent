@@ -12,12 +12,16 @@ interface CipherVis {
   marginColor: string;
 }
 
+// attackFrontier = deepest round count that any published academic distinguisher
+// or key-recovery has reached on a REDUCED-ROUND variant. It is NOT a "percent
+// broken" — the full-round ciphers below have no known practical break. The gap
+// to totalRounds is the security margin: rounds no public attack gets near.
 const ciphers: CipherVis[] = [
   {
     name: 'Serpent-256',
     totalRounds: 32,
     attackFrontier: 12,
-    attackLabel: 'Best known attack: 12 rounds',
+    attackLabel: 'Reduced-round result: 12 rounds',
     color: '#d4a72c',
     marginColor: '#2d6a4f',
   },
@@ -25,7 +29,7 @@ const ciphers: CipherVis[] = [
     name: 'AES-128',
     totalRounds: 10,
     attackFrontier: 7,
-    attackLabel: 'Best attack: 7 rounds',
+    attackLabel: 'Reduced-round result: 7 rounds',
     color: '#4a90d9',
     marginColor: '#2d6a4f',
   },
@@ -33,7 +37,7 @@ const ciphers: CipherVis[] = [
     name: 'AES-192',
     totalRounds: 12,
     attackFrontier: 8,
-    attackLabel: 'Best attack: 8 rounds',
+    attackLabel: 'Reduced-round result: 8 rounds',
     color: '#4a90d9',
     marginColor: '#2d6a4f',
   },
@@ -41,7 +45,7 @@ const ciphers: CipherVis[] = [
     name: 'AES-256',
     totalRounds: 14,
     attackFrontier: 9,
-    attackLabel: 'Best attack: 9 rounds',
+    attackLabel: 'Reduced-round result: 9 rounds',
     color: '#4a90d9',
     marginColor: '#2d6a4f',
   },
@@ -75,7 +79,7 @@ export function renderVisualization(container: HTMLElement): void {
     svg.setAttribute('width', '100%');
     svg.setAttribute('viewBox', `0 0 ${containerWidth} ${svgHeight}`);
     svg.setAttribute('role', 'img');
-    svg.setAttribute('aria-label', 'Security margin visualization comparing Serpent-256 (32 rounds, 20 unbroken) versus AES-128 (10 rounds, 3 unbroken), AES-192 (12 rounds, 4 unbroken), and AES-256 (14 rounds, 5 unbroken). Serpent has 2.7 times the safety margin of AES-256.');
+    svg.setAttribute('aria-label', 'Security margin chart. Each cipher is shown as its full round count, with the coloured prefix marking the deepest round count any published reduced-round analysis has reached, and the green remainder the untouched security margin. Serpent-256 has 32 rounds with reduced-round results to 12, leaving 20 rounds of margin. AES-128 has 10 rounds, results to 7. AES-192 has 12 rounds, results to 8. AES-256 has 14 rounds, results to 9. These reduced-round results do not break the full ciphers; all four remain unbroken at full round count.');
     svg.style.maxWidth = `${containerWidth}px`;
     svg.style.display = 'block';
     svg.style.margin = '0 auto';
@@ -150,10 +154,10 @@ export function renderVisualization(container: HTMLElement): void {
       atk.textContent = cipher.attackLabel;
       svg.appendChild(atk);
 
-      // Margin label
+      // Margin label — rounds of untouched margin, stated as a count, NOT a
+      // "percent broken", so the frontier can't be misread as fractional damage.
       if (cipher.totalRounds > cipher.attackFrontier) {
         const margin = cipher.totalRounds - cipher.attackFrontier;
-        const pct = Math.round((margin / cipher.totalRounds) * 100);
         const midX = labelWidth + padding + ((cipher.attackFrontier + cipher.totalRounds) / 2) * (blockWidth + blockGap);
         const margin_label = document.createElementNS('http://www.w3.org/2000/svg', 'text');
         margin_label.setAttribute('x', `${midX}`);
@@ -161,7 +165,7 @@ export function renderVisualization(container: HTMLElement): void {
         margin_label.setAttribute('text-anchor', 'middle');
         margin_label.setAttribute('fill', '#66bb6a');
         margin_label.setAttribute('font-size', '10');
-        margin_label.textContent = `${margin} unbroken rounds (${pct}%)`;
+        margin_label.textContent = `${margin} rounds of margin (no public attack reaches here)`;
         svg.appendChild(margin_label);
       }
     });
@@ -169,10 +173,10 @@ export function renderVisualization(container: HTMLElement): void {
     // Legend
     const ly = svgHeight - 65;
     const legendItems = [
-      { color: '#d4a72c', label: 'Attacked rounds (Serpent)' },
-      { color: '#4a90d9', label: 'Attacked rounds (AES)' },
-      { color: '#2d6a4f', label: 'Unbroken margin' },
-      { color: '#ff4444', label: 'Attack frontier' },
+      { color: '#d4a72c', label: 'Rounds reached by analysis (Serpent)' },
+      { color: '#4a90d9', label: 'Rounds reached by analysis (AES)' },
+      { color: '#2d6a4f', label: 'Security margin' },
+      { color: '#ff4444', label: 'Deepest reduced-round result' },
     ];
     legendItems.forEach((item, i) => {
       const lx = padding + i * 200;
@@ -194,15 +198,15 @@ export function renderVisualization(container: HTMLElement): void {
       svg.appendChild(text);
     });
 
-    // Callout
+    // Callout \u2014 a neutral statement of what the bars show, no "chose to survive"
+    // editorializing. All four ciphers remain unbroken at full round count.
     const callout = document.createElementNS('http://www.w3.org/2000/svg', 'text');
     callout.setAttribute('x', `${containerWidth / 2}`);
     callout.setAttribute('y', `${svgHeight - 15}`);
     callout.setAttribute('text-anchor', 'middle');
     callout.setAttribute('fill', goldColor);
-    callout.setAttribute('font-size', '13');
-    callout.setAttribute('font-style', 'italic');
-    callout.textContent = "Serpent's unbroken margin is 2.7\u00D7 wider than AES-256";
+    callout.setAttribute('font-size', '12');
+    callout.textContent = 'A wider margin buys confidence, not proof \u2014 every cipher here is unbroken at full rounds';
     svg.appendChild(callout);
 
     container.appendChild(svg);
