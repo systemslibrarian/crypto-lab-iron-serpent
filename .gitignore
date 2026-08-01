@@ -1,0 +1,7 @@
+node_modules/
+dist/
+.DS_Store
+
+# Review notes kept locally, not part of the shipped demo
+chat*.md
+gem.md
