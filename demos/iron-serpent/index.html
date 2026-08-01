@@ -482,15 +482,20 @@
         <div class="about-grid">
           <div class="about-card">
             <h3>The Designers</h3>
+            <p>
+              Affiliations below are the ones printed on the 1998 AES submission paper. That paper is
+              jointly authored and does not apportion individual contributions — who designed the
+              <span class="term" tabindex="0" role="note" aria-label="S-box: substitution box. A small lookup table that replaces input bits with scrambled output bits — the nonlinear heart of a block cipher's confusion." data-tip="Substitution box: a small lookup table that swaps input bits for scrambled output bits — a cipher's core source of nonlinearity.">S-boxes</span>,
+              the key schedule or the overall structure is not stated.
+            </p>
             <ul>
-              <li><strong>Eli Biham</strong> — Technion, Israel Institute of Technology, Israel.
-                Co-inventor of differential cryptanalysis (with Adi Shamir). Pioneer of block cipher analysis.</li>
-              <li><strong>Ross Anderson</strong> — University of Cambridge, UK.
-                Security engineering researcher. Contributed the overall architecture and design philosophy.</li>
-              <li><strong>Lars Knudsen</strong> — Technical University of Denmark (DTU).
-                Expert in integral and impossible differential cryptanalysis. Key contributor to the
-                <span class="term" tabindex="0" role="note" aria-label="S-box: substitution box. A small lookup table that replaces input bits with scrambled output bits — the nonlinear heart of a block cipher's confusion." data-tip="Substitution box: a small lookup table that swaps input bits for scrambled output bits — a cipher's core source of nonlinearity.">S-box</span>
-                design.</li>
+              <li><strong>Ross Anderson</strong> — Cambridge University, England.
+                Security engineering researcher.</li>
+              <li><strong>Eli Biham</strong> — Technion, Haifa, Israel.
+                Co-inventor of differential cryptanalysis (with Adi Shamir).</li>
+              <li><strong>Lars Knudsen</strong> — University of Bergen, Norway (he moved to the
+                Technical University of Denmark around 2001). Known for integral and impossible
+                differential cryptanalysis.</li>
             </ul>
           </div>
           <div class="about-card">
@@ -498,10 +503,16 @@
             <p>
               Eli Biham studied under <strong>Adi Shamir</strong> (the "S" in RSA) at the Weizmann Institute.
               Together they developed
-              <strong><span class="term" tabindex="0" role="note" aria-label="Differential cryptanalysis: an attack that feeds a cipher pairs of inputs with a chosen difference and studies how that difference propagates, exposing statistical bias a good cipher must hide." data-tip="An attack that feeds a cipher input pairs with a chosen difference and tracks how it propagates — a good cipher must hide that pattern.">differential cryptanalysis</span></strong> — the technique that broke DES
-              and reshaped how every modern block cipher is designed. Biham brought this deep understanding of
-              attack mechanisms to Serpent's design, building a cipher specifically resistant to the techniques
-              he himself had pioneered.
+              <strong><span class="term" tabindex="0" role="note" aria-label="Differential cryptanalysis: an attack that feeds a cipher pairs of inputs with a chosen difference and studies how that difference propagates, exposing statistical bias a good cipher must hide." data-tip="An attack that feeds a cipher input pairs with a chosen difference and tracks how it propagates — a good cipher must hide that pattern.">differential cryptanalysis</span></strong> — the first published
+              general technique that could attack a block cipher faster than brute force <em>in principle</em>.
+              It did not break DES. Their attack on the full 16 rounds needs roughly 2<sup>47</sup> chosen
+              plaintexts, which is worse than exhaustive search in practice; DES's S-boxes turned out to have
+              been designed to resist it, IBM having known the method internally as "the T attack" back in 1974.
+              DES was broken in practice by exhaustive key search against its 56-bit key (the EFF's Deep Crack
+              machine, 1998). What differential cryptanalysis did change is how every block cipher since has
+              been designed and argued for. Biham brought that understanding of attack mechanisms to Serpent,
+              building a cipher with an explicit resistance argument against the techniques he himself had
+              pioneered.
             </p>
           </div>
           <div class="about-card">
