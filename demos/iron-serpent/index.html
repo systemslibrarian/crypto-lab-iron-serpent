@@ -13,11 +13,6 @@
     <title>Iron Serpent — Serpent-256 Cryptographic Demo</title>
   </head>
   <body>
-<!-- BEGIN crypto-lab shared header — managed; edit shared-header.html + re-run reapply-header.py
-     Identical on every lab. Self-contained styles. Accents use each demo's own
-     --accent CSS variable (teal #35d6bb fallback). The ONLY per-repo value is the
-     repo name (crypto-lab-iron-serpent) in the GitHub link.
-     Source of truth: github.com/systemslibrarian/crypto-lab/shared-header.html -->
 <style>
   .cl-topbar{
     /* The bar is always dark (#0b1512) regardless of page theme, so header
@@ -129,7 +124,6 @@
     else dedupeBanner();
   })();
 </script>
-<!-- END crypto-lab shared header -->
     <div id="app">
       <main>
       <button type="button" id="theme-toggle" class="theme-toggle" aria-label="Switch to light mode">🌙</button>
@@ -450,7 +444,7 @@
         <button id="bench-btn" class="primary-btn">Run Benchmark</button>
         <div id="bench-progress" class="hidden" role="status" aria-live="polite">
           <span id="bench-progress-text"></span>
-          <div class="bench-progress-bar" role="progressbar" aria-label="Benchmark progress" aria-valuemin="0" aria-valuemax="100"><div id="bench-progress-fill"></div></div>
+          <div class="bench-progress-bar" role="progressbar" aria-label="Benchmark progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><div id="bench-progress-fill"></div></div>
         </div>
         <div id="bench-results" class="hidden">
           <p class="bench-takeaway" role="note">

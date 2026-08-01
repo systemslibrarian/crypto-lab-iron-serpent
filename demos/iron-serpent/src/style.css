@@ -67,7 +67,6 @@ body {
   padding: 2rem 1.5rem;
 }
 
-/* BEGIN cl-hero standard — managed, keep in sync across fleet */
 /* Map fleet accent/dim tokens to this demo's theme vars: --gold is the accent,
    --text-muted is the dimmed text. Both are already tuned per theme for AA. */
 .cl-hero{--accent:var(--gold);--text-dim:var(--text-muted);
@@ -79,8 +78,7 @@ body {
 .cl-hero-why{flex:0 1 min(40%,26rem);min-width:min(100%,15rem);border:1px solid var(--border);border-radius:10px;padding:.85rem 1.05rem;background:color-mix(in oklab,var(--accent) 6%,transparent);}
 .cl-hero-why-label{display:block;font-size:.68rem;font-weight:700;letter-spacing:.14em;color:var(--text);}
 .cl-hero-why-text{margin:.35rem 0 0;font-size:.95rem;line-height:1.5;}
-@media (max-width:640px){.cl-hero{flex-direction:column;}.cl-hero-why{flex-basis:auto;width:100%;}}
-/* END cl-hero standard */
+@media (max-width:640px){.cl-hero{flex-direction:column;}.cl-hero-why{flex-basis:auto;width:100%;}.cl-hero-main{flex-basis:auto;min-width:0;}}
 
 .status-banner {
   text-align: center;
@@ -136,6 +134,8 @@ body {
   font-size: 0.78rem;
   cursor: pointer;
   white-space: nowrap;
+  /* WCAG 2.5.8 target size */
+  min-height: 44px;
 }
 .ghost-btn:hover:not(:disabled) {
   border-color: var(--gold);
@@ -244,6 +244,7 @@ details > summary:focus-visible {
   cursor: pointer;
   font-size: 0.9rem;
   width: 100%;
+  min-height: 44px;
   margin-bottom: 1rem;
 }
 .primary-btn:hover { opacity: 0.9; }
@@ -300,6 +301,8 @@ html[data-theme='light'] .primary-btn:hover { opacity: 1; background-color: #7a5
   padding: 0.2rem 0.6rem;
   font-size: 0.75rem;
   cursor: pointer;
+  min-height: 44px;
+  min-width: 44px;
 }
 .fmt-btn:first-child { border-radius: var(--radius) 0 0 var(--radius); }
 .fmt-btn:last-child { border-radius: 0 var(--radius) var(--radius) 0; }
@@ -478,6 +481,7 @@ section h2 {
   font-size: 0.85rem;
   cursor: pointer;
   min-width: 100px;
+  min-height: 44px;
 }
 
 .bench-control select:focus {
@@ -568,7 +572,7 @@ section h2 {
 .avalanche-field label { font-size: 0.8rem; color: var(--text-muted); }
 #aval-block { min-width: min(360px, 100%); }
 #aval-bit { width: 6rem; }
-.avalanche-controls .icon-btn { min-height: 38px; min-width: auto; padding: 0.4rem 0.9rem; font-size: 0.8rem; }
+.avalanche-controls .icon-btn { min-height: 44px; min-width: auto; padding: 0.4rem 0.9rem; font-size: 0.8rem; }
 
 .avalanche-ct {
   display: flex;
@@ -696,11 +700,12 @@ section h2 {
   display: flex;
   align-items: center;
   gap: 0.5rem;
+  min-height: 44px;
 }
 .ctr-reuse-toggle input[type='checkbox'] {
   width: auto;
-  min-width: 1.1rem;
-  height: 1.1rem;
+  min-width: 1.25rem;
+  height: 1.25rem;
   accent-color: var(--red);
   cursor: pointer;
 }
@@ -845,6 +850,8 @@ section h2 {
   padding: 0.25rem 0.7rem;
   font-size: 0.75rem;
   cursor: pointer;
+  min-height: 44px;
+  min-width: 44px;
 }
 .sv-mode-btn:first-child { border-radius: var(--radius) 0 0 var(--radius); }
 .sv-mode-btn:last-child { border-radius: 0 var(--radius) var(--radius) 0; border-left: none; }
