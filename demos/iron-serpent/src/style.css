@@ -5,6 +5,7 @@
   --bg: #0d1117;
   --surface: #161b22;
   --border: #30363d;
+  --control-border: #66788e;
   --text: #e6edf3;
   --text-muted: #8b949e;
   --gold: #d4a72c;
@@ -19,6 +20,7 @@ html[data-theme='light'] {
   --bg: #f6f8fa;
   --surface: #ffffff;
   --border: #d0d7de;
+  --control-border: #6b7280;
   --text: #1f2328;
   --text-muted: #59636e;
   /* Darker accent hues: #d4a72c and #4a90d9 fall below 4.5:1 on light backgrounds. */
@@ -218,6 +220,13 @@ input, textarea {
   font-family: 'SF Mono', 'Fira Code', monospace;
   font-size: 0.85rem;
   resize: vertical;
+}
+
+/* Form fields are load-bearing boundaries under WCAG 1.4.11. Keep their
+   outline distinct from the subtler decorative panel divider token. */
+input:not([type='checkbox']):not([type='range']):not([type='file']),
+textarea {
+  border-color: var(--control-border);
 }
 
 input:focus, textarea:focus {
