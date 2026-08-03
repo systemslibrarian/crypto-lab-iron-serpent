@@ -12,7 +12,7 @@ export default defineConfig({
   retries: process.env.CI ? 1 : 0,
   reporter: process.env.CI ? [['list'], ['html', { open: 'never' }]] : 'list',
   use: {
-    baseURL: 'http://localhost:4173/crypto-lab-iron-serpent/',
+    baseURL: 'http://localhost:4703/crypto-lab-iron-serpent/',
     screenshot: 'only-on-failure',
   },
   projects: [
@@ -20,8 +20,11 @@ export default defineConfig({
     { name: 'mobile', use: { ...devices['iPhone 13'] } },
   ],
   webServer: {
-    command: 'npm run preview',
-    url: 'http://localhost:4173/crypto-lab-iron-serpent/',
+    // Pin the port explicitly. The bare `npm run preview` relied on vite's
+    // fleet-shared default, and with reuseExistingServer that lets the suite
+    // silently attach to a sibling lab's preview and test the wrong app.
+    command: 'npm run preview -- --port 4703 --strictPort',
+    url: 'http://localhost:4703/crypto-lab-iron-serpent/',
     reuseExistingServer: !process.env.CI,
     timeout: 30_000,
   },
