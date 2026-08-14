@@ -20,10 +20,16 @@ export default defineConfig({
     { name: 'mobile', use: { ...devices['iPhone 13'] } },
   ],
   webServer: {
+    // Build first. `vite preview` serves whatever is already sitting in
+    // dist/, so without this the suite tests the last bundle that built:
+    // a failing build leaves the previous one in place and the gate passes
+    // green against source that no longer compiles, and a mutation check is
+    // meaningless because the mutation never reaches the served bundle.
+    //
     // Pin the port explicitly. The bare `npm run preview` relied on vite's
     // fleet-shared default, and with reuseExistingServer that lets the suite
     // silently attach to a sibling lab's preview and test the wrong app.
-    command: 'npm run preview -- --port 4703 --strictPort',
+    command: 'npm run build && npm run preview -- --port 4703 --strictPort',
     url: 'http://localhost:4703/crypto-lab-iron-serpent/',
     reuseExistingServer: !process.env.CI,
     timeout: 30_000,
