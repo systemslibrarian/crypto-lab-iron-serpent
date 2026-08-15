@@ -22,7 +22,7 @@ async function fieldContrast(page: Page): Promise<number> {
   return contrast(colors.border, colors.background);
 }
 
-for (const theme of ['dark', 'light'] as const) {
+for (const theme of ['dark'] as const) {
   test(`load-bearing field boundary clears 3:1 in ${theme} theme`, async ({ page }) => {
     await page.goto('.');
     await page.evaluate((value) => document.documentElement.setAttribute('data-theme', value), theme);

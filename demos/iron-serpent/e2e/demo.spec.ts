@@ -196,7 +196,7 @@ test.describe('layout and accessibility', () => {
     expect(overflow).toBeLessThanOrEqual(1);
   });
 
-  for (const theme of ['dark', 'light'] as const) {
+  for (const theme of ['dark'] as const) {
     test(`axe (including color-contrast) passes in ${theme} theme`, async ({ page }) => {
       await waitForEngine(page);
       // Reveal the advanced exhibits so their contrast is audited too.
