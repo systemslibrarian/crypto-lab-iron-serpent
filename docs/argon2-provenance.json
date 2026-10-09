@@ -1,0 +1,23 @@
+{
+  "package": "argon2-browser",
+  "version": "1.18.0",
+  "archiveUrl": "https://registry.npmjs.org/argon2-browser/-/argon2-browser-1.18.0.tgz",
+  "archiveIntegrity": "sha512-ImVAGIItnFnvET1exhsQB7apRztcoC5TnlSqernMJDUjbc/DLq3UEYeXFrLPrlaIl8cVfwnXb6wX2KpFf2zxHw==",
+  "originalCompiler": null,
+  "upstreamSourceToBinary": "unverified",
+  "activeLoader": "demos/iron-serpent/public/kdf-worker.js imports argon2-bundled.min.js (embedded WASM)",
+  "artifacts": [
+    {
+      "path": "demos/iron-serpent/public/argon2-bundled.min.js",
+      "sha256": "77c64b946baf1a5116dc591f4b9965d636b1b455f75edd2d4a587cb75e01687b",
+      "packagePath": "package/dist/argon2-bundled.min.js",
+      "active": true
+    },
+    {
+      "path": "demos/iron-serpent/public/argon2.wasm",
+      "sha256": "0c2149886c13e4eae4a6ca25ee71d47423c5c8740a874cf04ff816d1b2c901d7",
+      "packagePath": "package/dist/argon2.wasm",
+      "active": false
+    }
+  ]
+}
