@@ -19,5 +19,26 @@
       "packagePath": "package/dist/argon2.wasm",
       "active": false
     }
-  ]
+  ],
+  "publisherSourceCandidates": {
+    "repository": "antelle/argon2-browser",
+    "publisherGitHead": "63cda65cd2182e39a139aa074e2306332ddd4417",
+    "officialTag": "1.18.0",
+    "annotatedTagObject": "4df9f517f0fd38601d7fbd66018ac20596750de9",
+    "githubSignatureVerification": "no_user",
+    "argon2Repository": "P-H-C/phc-winner-argon2",
+    "argon2Gitlink": "16d3df698db2486dde480b09a732bf9bf48599f9",
+    "declaredCiCompilerSelection": "latest",
+    "originalCompiler": null,
+    "sourceToDistribution": "unverified",
+    "cleanBuildReport": "docs/argon2-source-rebuild-20261010.json",
+    "cleanBuildExit": 2,
+    "cleanBuildProducesArtifacts": false
+  },
+  "embeddedWasmObservation": {
+    "decodedSha256": "0c2149886c13e4eae4a6ca25ee71d47423c5c8740a874cf04ff816d1b2c901d7",
+    "decodedBytes": 25725,
+    "matchesRetainedStandaloneBytes": true,
+    "claimLimit": "Byte identity only; original compiler and upstream source correspondence unverified"
+  }
 }
