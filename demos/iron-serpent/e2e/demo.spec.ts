@@ -176,14 +176,15 @@ test.describe('interactive panels', () => {
     await expect(page.locator('.sv-diffusion')).toContainText('Diffusion after round');
   });
 
-  test('passphrase strength meter warns on well-known passphrases', async ({ page }) => {
+  test('passphrase guidance warns on public examples without certifying typed input', async ({ page }) => {
     await waitForEngine(page);
 
     await page.click('#enc-example');
-    await expect(page.locator('#pass-strength-text')).toContainText('cracking wordlist');
+    await expect(page.locator('#pass-strength-text')).toContainText('small example list');
 
     await page.fill('#enc-pass', 'K9$mQ2#vX7@pL4!wN8&zR5^tB3*d');
-    await expect(page.locator('#pass-strength-text')).toContainText('excellent');
+    await expect(page.locator('#pass-strength-text')).toContainText('Strength not estimated');
+    await expect(page.locator('#pass-strength-text')).not.toContainText('small example list');
   });
 });
 
