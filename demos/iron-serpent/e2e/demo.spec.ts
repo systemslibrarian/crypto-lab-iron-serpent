@@ -188,6 +188,21 @@ test.describe('interactive panels', () => {
   });
 });
 
+test('default benchmark completes and describes adapter overhead', async ({page}) => {
+  await waitForEngine(page);
+  await unlockExhibits(page);
+  await page.click('#bench-btn');
+  await expect(page.locator('#bench-results')).toBeVisible({timeout: 30_000});
+  await expect(page.locator('#bench-meta-iters')).toHaveText('10');
+  await expect(page.locator('#bench-meta-size')).toHaveText('1 MB');
+  for (const selector of ['#bench-serpent', '#bench-aes']) {
+    const value = parseFloat(await page.locator(selector).innerText());
+    expect(Number.isFinite(value) && value > 0).toBe(true);
+  }
+  await expect(page.locator('.bench-takeaway')).toContainText('JavaScript CTR framing');
+  await expect(page.locator('#bench-btn')).toBeEnabled();
+});
+
 test.describe('layout and accessibility', () => {
   test('no horizontal overflow', async ({ page }) => {
     await waitForEngine(page);
