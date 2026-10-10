@@ -17,6 +17,13 @@ Iron Serpent is a browser demo for password-based symmetric encryption built aro
 
 The live demo lets you enter a passphrase and plaintext, produce an encrypted JSON payload, and decrypt that payload back in the browser. A **Load example** button seeds a sample message, and **Send this payload to Decrypt** wires the encrypt output straight into the decrypt panel for a one-click round trip. It also includes Base64 and Hex output controls, a benchmark panel with Data size and Iterations controls, an Argon2id parameters panel that shows the KDF settings used for key derivation, and a security-margin visualization.
 
+Passphrase guidance reports input length and warns about a small list of public
+examples. It does not infer entropy or predict crack time from typed characters:
+the generation process and attacker guess rate are unknown. A long repeated or
+random-looking string is not automatically certified strong. See
+[NIST SP 800-63B-4, Appendix A](https://pages.nist.gov/800-63-4/sp800-63b.html#appA).
+Argon2id adds cost per guess without creating password entropy.
+
 The demo is organized as a set of exhibits:
 
 1. **Encrypt / Decrypt** — the full password-based authenticated-encryption round trip. An expandable **Pipeline** diagram traces the real flow (passphrase → Argon2id with salt → masterKey → HKDF splits into encKey + macKey → Serpent-256-CTR keystream XOR → HMAC-SHA256), and labels which stage produces each `salt`, `nonce`, `ciphertext`, and `mac` field in the JSON output.

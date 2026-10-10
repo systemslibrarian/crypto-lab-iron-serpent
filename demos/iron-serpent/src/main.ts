@@ -162,24 +162,22 @@ async function init() {
     });
   }
 
-  // --- Passphrase strength meter ---
+  // --- Passphrase guidance (typed input cannot establish entropy) ---
   const passInput = $('enc-pass') as HTMLInputElement;
   passInput.addEventListener('input', () => {
     const wrap = $('pass-strength');
-    const fill = $('pass-strength-fill');
     const text = $('pass-strength-text');
     if (!passInput.value) {
       wrap.classList.add('hidden');
+      text.textContent = '';
+      text.classList.remove('warn');
       return;
     }
     const est = estimateStrength(passInput.value);
     wrap.classList.remove('hidden');
-    fill.style.width = `${Math.min(100, (est.bits / 100) * 100)}%`;
-    fill.dataset.score = String(est.score);
-    text.textContent = est.warning
-      ? est.warning
-      : `~${est.bits} bits · ${est.label} · ${est.crackTime} to crack at 10,000 Argon2id guesses/second`;
-    text.classList.toggle('warn', Boolean(est.warning) || est.score < 2);
+    text.textContent = `Strength not estimated · ${est.characterCount} character${est.characterCount === 1 ? '' : 's'}. `
+      + (est.warning ? `${est.warning} ` : '') + est.explanation;
+    text.classList.toggle('warn', Boolean(est.warning));
   });
 
   // --- Keyboard shortcuts ---

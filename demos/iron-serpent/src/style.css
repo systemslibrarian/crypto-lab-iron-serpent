@@ -184,25 +184,8 @@ body {
    stretch a panel past the viewport. */
 #crypto-panels > .panel { min-width: 0; }
 
-/* --- Passphrase strength meter --- */
+/* --- Passphrase guidance --- */
 .pass-strength { margin-top: 0.5rem; }
-.pass-strength-bar {
-  height: 5px;
-  background-color: var(--border);
-  border-radius: 3px;
-  overflow: hidden;
-}
-#pass-strength-fill {
-  height: 100%;
-  width: 0%;
-  border-radius: 3px;
-  background-color: var(--red);
-  transition: width 0.2s ease, background 0.2s ease;
-}
-#pass-strength-fill[data-score='1'] { background-color: #db6d28; }
-#pass-strength-fill[data-score='2'] { background-color: var(--gold); }
-#pass-strength-fill[data-score='3'] { background-color: #3fb950; }
-#pass-strength-fill[data-score='4'] { background-color: #2d6a4f; }
 #pass-strength-text {
   font-size: 0.75rem;
   color: var(--text-muted);
