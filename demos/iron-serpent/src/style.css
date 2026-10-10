@@ -795,7 +795,7 @@ section h2 {
 .tour-steps { list-style: none; display: flex; flex-direction: column; gap: 0.9rem; padding: 0; }
 .tour-step {
   display: grid;
-  grid-template-columns: auto 1fr;
+  grid-template-columns: auto minmax(0, 1fr);
   gap: 0.9rem;
   align-items: start;
   font-size: 0.9rem;
@@ -818,7 +818,11 @@ section h2 {
 .tour-step.active .tour-num { border-color: var(--gold); color: var(--gold); }
 .tour-step.done .tour-num { background-color: var(--green); border-color: var(--green); color: #fff; }
 .tour-hint { display: block; font-size: 0.78rem; color: var(--gold); margin-top: 0.25rem; font-weight: 600; }
-#tour-reveal { margin-top: 0.6rem; }
+#tour-reveal {
+  margin-top: 0.6rem;
+  max-width: 100%;
+  white-space: normal;
+}
 
 /* Locked exhibits: hidden until the round trip unlocks them. */
 .exhibits-locked { display: none; }
