@@ -21,7 +21,7 @@ A password-based authenticated-encryption lab built around the **Serpent** block
 5. **Inside Serpent — the 32 rounds**: Step one 128-bit block through the real Serpent round function (key mixing → 4-bit S-box substitution → linear transform) with a 1..32 counter, spotlight a nibble entering/leaving the S-box, and watch a single flipped input bit avalanche across the block. Every value comes from a spec-accurate Serpent verified byte-for-byte against the official AES vectors and the production WASM engine
 6. **Security Margin**: Reduced-round attack frontier vs full round count — read as a margin, not a countdown
 7. **Avalanche Effect**: Flip any single input bit of a 128-bit block and watch ~50% of Serpent's output bits change (Strict Avalanche Criterion). Type ASCII or enter hex; the flipped input bit is highlighted on the block
-8. **CTR Mode Explorer**: Interactive walkthrough of how a 16-byte block cipher becomes a stream cipher — counter blocks → keystream → XOR, byte by byte — plus a live **nonce-reuse** footgun showing `CT1 ⊕ CT2 = PT1 ⊕ PT2`. Verified byte-for-byte against the real `SerpentCtr` in the test suite
+8. **CTR Mode Explorer**: Interactive walkthrough of how a 16-byte block cipher becomes a stream cipher — counter blocks → keystream → XOR, byte by byte — plus a live **nonce-reuse** footgun showing `CT1 ⊕ CT2 = PT1 ⊕ PT2`. Verified byte-for-byte against the lab's legacy-compatible `SerpentCTR` in the test suite
 9. **Benchmark**: Live Serpent-256-CTR vs AES-256-GCM throughput (MB/s), with a takeaway banner: slower here = more rounds + no hardware AES-NI, **not** weaker
 10. **Attribution**: About section covering the designers, Israeli cryptographic lineage, and AES competition history
 
@@ -60,10 +60,23 @@ npm run test:e2e  # real-browser E2E (Playwright): encrypt/decrypt round trip,
 
 ## Serpent Implementation Source
 
-**Package**: [`leviathan-crypto`](https://www.npmjs.com/package/leviathan-crypto) v1.4.0
+**Package**: [`leviathan-crypto`](https://www.npmjs.com/package/leviathan-crypto) v3.0.1
 - WASM-based Serpent-256 with bitslice S-boxes
 - Zero-dependency WebAssembly cryptography library
 - Provides `Serpent` (ECB block), `SerpentCtr` (CTR mode), and authenticated constructions
+
+Version 3 requires an explicit WASM source. The wrapper supplies the package's
+`serpentWasm` from `leviathan-crypto/serpent/embedded` to `serpentInit`, following
+the [version 3.0.1 initialization API](https://github.com/xero/leviathan-crypto/blob/320637c821dd36faee5e685f5cb3be74d3093b32/docs/serpent.md#module-init).
+No external runtime WASM download is needed. The block wrapper converts between
+the lab's AES-submission floppy notation and version 3's natural byte order.
+CTR retains the existing little-endian counter/XOR framing over that wrapper,
+so existing `iron-serpent-v1` payloads and the round/CTR exhibits keep their byte
+convention. The throughput measurement includes this JavaScript framing.
+This conversion follows upstream's [floppy-vector preprocessing](https://github.com/xero/leviathan-crypto/blob/320637c821dd36faee5e685f5cb3be74d3093b32/test/unit/serpent/vector_parser.ts#L442).
+Official Serpent vectors, fixed legacy ciphertext controls, the
+independent round model, CTR, authentication and real-browser checks remain
+required; they do not establish a reproducible upstream source-to-binary build.
 
 ## Test Vector Sources
 
