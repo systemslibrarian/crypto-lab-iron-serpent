@@ -22,7 +22,7 @@ A password-based authenticated-encryption lab built around the **Serpent** block
 6. **Security Margin**: Reduced-round attack frontier vs full round count — read as a margin, not a countdown
 7. **Avalanche Effect**: Flip any single input bit of a 128-bit block and watch ~50% of Serpent's output bits change (Strict Avalanche Criterion). Type ASCII or enter hex; the flipped input bit is highlighted on the block
 8. **CTR Mode Explorer**: Interactive walkthrough of how a 16-byte block cipher becomes a stream cipher — counter blocks → keystream → XOR, byte by byte — plus a live **nonce-reuse** footgun showing `CT1 ⊕ CT2 = PT1 ⊕ PT2`. Verified byte-for-byte against the lab's legacy-compatible `SerpentCTR` in the test suite
-9. **Benchmark**: Live Serpent-256-CTR vs AES-256-GCM throughput (MB/s), with a takeaway banner: slower here = more rounds + no hardware AES-NI, **not** weaker
+9. **Benchmark**: Live Serpent-256-CTR vs AES-256-GCM throughput (MB/s), including the Serpent adapter's JavaScript CTR framing and byte conversion. Native Web Crypto, runtime and hardware choices also affect the comparison; measured throughput does **not** measure cipher strength
 10. **Attribution**: About section covering the designers, Israeli cryptographic lineage, and AES competition history
 
 ## Passphrase guidance limits
