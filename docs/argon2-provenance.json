@@ -4,7 +4,7 @@
   "archiveUrl": "https://registry.npmjs.org/argon2-browser/-/argon2-browser-1.18.0.tgz",
   "archiveIntegrity": "sha512-ImVAGIItnFnvET1exhsQB7apRztcoC5TnlSqernMJDUjbc/DLq3UEYeXFrLPrlaIl8cVfwnXb6wX2KpFf2zxHw==",
   "originalCompiler": null,
-  "upstreamSourceToBinary": "unverified",
+  "upstreamSourceToBinary": "reproduced",
   "activeLoader": "demos/iron-serpent/public/kdf-worker.js imports argon2-bundled.min.js (embedded WASM)",
   "artifacts": [
     {
@@ -39,6 +39,24 @@
     "decodedSha256": "0c2149886c13e4eae4a6ca25ee71d47423c5c8740a874cf04ff816d1b2c901d7",
     "decodedBytes": 25725,
     "matchesRetainedStandaloneBytes": true,
-    "claimLimit": "Byte identity only; original compiler and upstream source correspondence unverified"
+    "claimLimit": "Embedded/standalone byte identity; fresh source reproduction recorded separately. Original compiler and constant-time behavior unknown."
+  },
+  "sourceReproduction": {
+    "browserSourceSha": "63cda65cd2182e39a139aa074e2306332ddd4417",
+    "argon2SourceSha": "16d3df698db2486dde480b09a732bf9bf48599f9",
+    "compilerImage": "emscripten/emsdk@sha256:5871ba43a788243cbf890e2cb1a95e33e9cb72dcf52e1d2077ca39f2171f8b07",
+    "actualCompiler": "Emscripten2.0.23 (b15ca40ca02f469de3bf9a4de67a2655aede8974)",
+    "actualNode": "14.15.5",
+    "actualNpm": "6.14.11",
+    "publisherLockSha256": "373c51383c37ac3cccdc4d367b347a85b772a9787b95b5ce9596f6d2dfa0ebf2",
+    "originalCompiler": null,
+    "compilerStandardLibraries": "Immutable compiler-image inputs, inventory unchanged; all seven Argon2 C objects rebuilt fresh",
+    "verifiedArtifacts": [
+      "active bundled JavaScript",
+      "active embedded WASM",
+      "retained standalone WASM"
+    ],
+    "commandReport": "docs/argon2-source-rebuild-20261011.json",
+    "claimLimit": "Reproducible source correspondence with selected authenticated environment; original publisher environment and constant-time behavior not established"
   }
 }
