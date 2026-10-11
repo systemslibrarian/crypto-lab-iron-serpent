@@ -6,7 +6,7 @@
  * to produce a keystream, and the plaintext is simply XORed against it.
  * Decryption is the identical operation; Serpent's decryptBlock is never used.
  *
- * The counter convention here matches leviathan-crypto's SerpentCtr exactly
+ * The counter convention here matches the lab's legacy-compatible SerpentCTR
  * (verified in __tests__/ctr-explainer.test.ts): the first counter block IS
  * the nonce, incremented little-endian (byte 0 first) for each later block.
  *
@@ -18,7 +18,7 @@ import { Serpent256 } from './serpent';
 export const BLOCK_SIZE = 16;
 export const MAX_MESSAGE_BYTES = 48; // 3 blocks — enough to show the counter advancing
 
-/** Counter block i: nonce incremented i times, little-endian (matches SerpentCtr). */
+/** Counter block i: nonce incremented i times, little-endian (iron-serpent-v1). */
 export function counterBlock(nonce: Uint8Array, index: number): Uint8Array {
   const block = nonce.slice();
   for (let n = 0; n < index; n++) {

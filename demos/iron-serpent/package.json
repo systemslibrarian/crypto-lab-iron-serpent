@@ -25,6 +25,6 @@
   },
   "dependencies": {
     "argon2-browser": "^1.18.0",
-    "leviathan-crypto": "^1.4.0"
+    "leviathan-crypto": "^3.0.1"
   }
 }

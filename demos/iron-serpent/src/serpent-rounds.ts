@@ -22,7 +22,7 @@
  *
  * Convention: this is the standard "bitslice" Serpent representation, in which
  * the initial and final permutations become the identity (the block is loaded
- * as four little-endian 32-bit words). This matches leviathan-crypto and the
+ * as four little-endian 32-bit words). This matches the lab's block adapter and the
  * ecb_vt.txt / ecb_vk.txt vectors exactly.
  *
  * Reference: Anderson, Biham, Knudsen — "Serpent: A Proposal for the Advanced
