@@ -1,0 +1,181 @@
+{
+  "startedAt": "2026-10-10T23:09:27.503120+00:00",
+  "commands": [
+    {
+      "command": [
+        "git",
+        "clone",
+        "--no-checkout",
+        "https://github.com/antelle/argon2-browser.git",
+        "/Users/gmcas/repos/.fleet-maintenance-20261009/dots-report-resolution-20261009/iron-argon2-source-reproduction/browser"
+      ],
+      "cwd": "/Users/gmcas/repos/.fleet-maintenance-20261009/dots-report-resolution-20261009/iron-argon2-source-reproduction",
+      "exit": 0,
+      "stdout": "",
+      "stderr": "Cloning into '/Users/gmcas/repos/.fleet-maintenance-20261009/dots-report-resolution-20261009/iron-argon2-source-reproduction/browser'...\n",
+      "finishedAt": "2026-10-10T23:09:28.422255+00:00",
+      "seconds": 0.919031
+    },
+    {
+      "command": [
+        "git",
+        "remote",
+        "get-url",
+        "origin"
+      ],
+      "cwd": "/Users/gmcas/repos/.fleet-maintenance-20261009/dots-report-resolution-20261009/iron-argon2-source-reproduction/browser",
+      "exit": 0,
+      "stdout": "https://github.com/antelle/argon2-browser.git\n",
+      "stderr": "",
+      "finishedAt": "2026-10-10T23:09:28.433531+00:00",
+      "seconds": 0.011027
+    },
+    {
+      "command": [
+        "git",
+        "cat-file",
+        "-t",
+        "63cda65cd2182e39a139aa074e2306332ddd4417"
+      ],
+      "cwd": "/Users/gmcas/repos/.fleet-maintenance-20261009/dots-report-resolution-20261009/iron-argon2-source-reproduction/browser",
+      "exit": 0,
+      "stdout": "commit\n",
+      "stderr": "",
+      "finishedAt": "2026-10-10T23:09:28.444173+00:00",
+      "seconds": 0.010453
+    },
+    {
+      "command": [
+        "git",
+        "clone",
+        "--no-checkout",
+        "https://github.com/P-H-C/phc-winner-argon2.git",
+        "/Users/gmcas/repos/.fleet-maintenance-20261009/dots-report-resolution-20261009/iron-argon2-source-reproduction/c-source"
+      ],
+      "cwd": "/Users/gmcas/repos/.fleet-maintenance-20261009/dots-report-resolution-20261009/iron-argon2-source-reproduction",
+      "exit": 0,
+      "stdout": "",
+      "stderr": "Cloning into '/Users/gmcas/repos/.fleet-maintenance-20261009/dots-report-resolution-20261009/iron-argon2-source-reproduction/c-source'...\n",
+      "finishedAt": "2026-10-10T23:09:29.443996+00:00",
+      "seconds": 0.999544
+    },
+    {
+      "command": [
+        "git",
+        "remote",
+        "get-url",
+        "origin"
+      ],
+      "cwd": "/Users/gmcas/repos/.fleet-maintenance-20261009/dots-report-resolution-20261009/iron-argon2-source-reproduction/c-source",
+      "exit": 0,
+      "stdout": "https://github.com/P-H-C/phc-winner-argon2.git\n",
+      "stderr": "",
+      "finishedAt": "2026-10-10T23:09:29.453988+00:00",
+      "seconds": 0.00981
+    },
+    {
+      "command": [
+        "git",
+        "cat-file",
+        "-t",
+        "16d3df698db2486dde480b09a732bf9bf48599f9"
+      ],
+      "cwd": "/Users/gmcas/repos/.fleet-maintenance-20261009/dots-report-resolution-20261009/iron-argon2-source-reproduction/c-source",
+      "exit": 0,
+      "stdout": "commit\n",
+      "stderr": "",
+      "finishedAt": "2026-10-10T23:09:29.464051+00:00",
+      "seconds": 0.009901
+    },
+    {
+      "command": [
+        "git",
+        "ls-tree",
+        "63cda65cd2182e39a139aa074e2306332ddd4417",
+        "argon2"
+      ],
+      "cwd": "/Users/gmcas/repos/.fleet-maintenance-20261009/dots-report-resolution-20261009/iron-argon2-source-reproduction/browser",
+      "exit": 0,
+      "stdout": "160000 commit 16d3df698db2486dde480b09a732bf9bf48599f9\targon2\n",
+      "stderr": "",
+      "finishedAt": "2026-10-10T23:09:29.473954+00:00",
+      "seconds": 0.009623
+    },
+    {
+      "command": [
+        "/opt/homebrew/opt/emscripten/bin/emcc",
+        "--version"
+      ],
+      "cwd": "/Users/gmcas/repos/.fleet-maintenance-20261009/dots-report-resolution-20261009/iron-argon2-source-reproduction/clean-build-20261010",
+      "exit": 0,
+      "stdout": "emcc (Emscripten gcc/clang-like replacement + linker emulating GNU ld) 6.0.10-git\nCopyright (C) 2026 the Emscripten authors (see AUTHORS.txt)\nThis is free and open source software under the MIT license.\nThere is NO warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n\n",
+      "stderr": "",
+      "finishedAt": "2026-10-10T23:09:29.605327+00:00",
+      "seconds": 0.085005
+    },
+    {
+      "command": [
+        "cmake",
+        "--version"
+      ],
+      "cwd": "/Users/gmcas/repos/.fleet-maintenance-20261009/dots-report-resolution-20261009/iron-argon2-source-reproduction/clean-build-20261010",
+      "exit": 0,
+      "stdout": "cmake version 4.4.3\n\nCMake suite maintained and supported by Kitware (kitware.com/cmake).\n",
+      "stderr": "",
+      "finishedAt": "2026-10-10T23:09:29.639135+00:00",
+      "seconds": 0.033589
+    },
+    {
+      "command": [
+        "bash",
+        "build-wasm.sh"
+      ],
+      "cwd": "/Users/gmcas/repos/.fleet-maintenance-20261009/dots-report-resolution-20261009/iron-argon2-source-reproduction/clean-build-20261010",
+      "exit": 2,
+      "stdout": "-- Configuring done (0.4s)\n-- Generating done (0.0s)\n-- Build files have been written to: /Users/gmcas/repos/.fleet-maintenance-20261009/dots-report-resolution-20261009/iron-argon2-source-reproduction/clean-build-20261010\n[ 12%] Building C object CMakeFiles/argon2.dir/argon2/src/blake2/blake2b.c.o\n[ 25%] Building C object CMakeFiles/argon2.dir/argon2/src/argon2.c.o\n[ 37%] Building C object CMakeFiles/argon2.dir/argon2/src/core.c.o\n[ 50%] Building C object CMakeFiles/argon2.dir/argon2/src/encoding.c.o\n[ 62%] Building C object CMakeFiles/argon2.dir/argon2/src/thread.c.o\n[ 75%] Building C object CMakeFiles/argon2.dir/src/argon2_library.c.o\n[ 87%] Building C object CMakeFiles/argon2.dir/argon2/src/ref.c.o\n[100%] Linking C executable dist/argon2.js\n",
+      "stderr": "shared:INFO: (Emscripten: Running sanity checks)\ncache:INFO: generating system headers: sysroot_install.stamp... (this will be cached in \"/Users/gmcas/repos/.fleet-maintenance-20261009/dots-report-resolution-20261009/iron-argon2-source-reproduction/empty-compiler-cache/sysroot_install.stamp\" for subsequent builds)\ncache:INFO:  - ok\nemcc: warning: --memory-init-file is no longer supported [-Wdeprecated]\nemcc: error: invalid command line setting `-sEXTRA_EXPORTED_RUNTIME_METHODS=['UTF8ToString', 'allocate', 'ALLOC_NORMAL']`: No longer supported, use EXPORTED_RUNTIME_METHODS\nmake[2]: *** [dist/argon2.js] Error 1\nmake[1]: *** [CMakeFiles/argon2.dir/all] Error 2\nmake: *** [all] Error 2\n",
+      "finishedAt": "2026-10-10T23:09:31.444644+00:00",
+      "seconds": 1.805131
+    }
+  ],
+  "claim": "Diagnostic clean build of authenticated publisher source; selected compiler is not authenticated original compiler",
+  "browser": {
+    "repository": "antelle/argon2-browser",
+    "sha": "63cda65cd2182e39a139aa074e2306332ddd4417"
+  },
+  "c-source": {
+    "repository": "P-H-C/phc-winner-argon2",
+    "sha": "16d3df698db2486dde480b09a732bf9bf48599f9"
+  },
+  "sourceArchives": [
+    {
+      "sha": "63cda65cd2182e39a139aa074e2306332ddd4417",
+      "sha256": "ed803538ad2f6ab8241ca6f23c7ebc36cbb92c067c57a2f569a73075ccc565dc",
+      "excludedPrefixes": [
+        "dist",
+        "docs/dist",
+        "argon2"
+      ]
+    },
+    {
+      "sha": "16d3df698db2486dde480b09a732bf9bf48599f9",
+      "sha256": "1a2f7f9f903fb1f1762965cbb42e17d99a7481798113b4e16922a8c3d326dc1f",
+      "excludedPrefixes": []
+    }
+  ],
+  "actualCompiler": {
+    "path": "/opt/homebrew/opt/emscripten/bin/emcc",
+    "resolved": "/opt/homebrew/Cellar/emscripten/6.0.10/bin/emcc",
+    "sha256": "907acf77024faa030e1d9f517e8972db9328fc21959813380ad1b8d5bffb308d",
+    "emscriptenRoot": "/opt/homebrew/Cellar/emscripten/6.0.10/libexec",
+    "originalCompiler": null
+  },
+  "buildEnvironment": {
+    "EMSDK": "/Users/gmcas/repos/.fleet-maintenance-20261009/dots-report-resolution-20261009/iron-argon2-source-reproduction/selected-sdk",
+    "EM_CACHE": "/Users/gmcas/repos/.fleet-maintenance-20261009/dots-report-resolution-20261009/iron-argon2-source-reproduction/empty-compiler-cache",
+    "distInitiallyAbsent": true
+  },
+  "buildExit": 2,
+  "producedArtifacts": {},
+  "finishedAt": "2026-10-10T23:09:31.445039+00:00"
+}
