@@ -1,0 +1,15 @@
+{
+  "baselineRepository": "systemslibrarian/crypto-lab-iron-serpent",
+  "baselineSha": "cb656d854e1071b9c745a59342a27c60086f78e9",
+  "baselinePackage": "leviathan-crypto@1.4.0",
+  "capture": "Real Chromium UI encrypt/decrypt; actual bundled Argon2 Worker",
+  "passphrase": "Public compatibility fixture passphrase",
+  "plaintext": "Existing iron-serpent-v1 payload — decrypt this after the Leviathan 3 migration.",
+  "payload": {
+    "salt": "atHdYtn4cj9leWNswXr9Zw==",
+    "nonce": "ywrB60D+Wpc8eTu8Yy1qMQ==",
+    "ciphertext": "uOBR4o3z46WMK337YkYIU50FZLhaiYLWVMJEtVRkhmygHY5iErnBfaic8bwAeahH1t8V1zFs4n2u8kMwfizHWNdC06U9/L3rwaFao54BCxe+Fg==",
+    "mac": "OoMinXZI+SxmH20akiIXSz1cWN3FBPgz46dbYwD2JOs=",
+    "version": "iron-serpent-v1"
+  }
+}

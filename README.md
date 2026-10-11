@@ -31,7 +31,7 @@ The demo is organized as a set of exhibits:
 3. **Security Margin Visualization** — round counts and unbroken margins for Serpent-256 vs AES, framed honestly: the coloured prefix is the deepest *reduced-round* academic result, **not** a countdown to being broken. Every cipher shown is unbroken at full round count; a wider margin is a hedge against future analysis, not a measure of how close a cipher is to failing.
 4. **Avalanche Effect** — flips a single input bit and shows how ~50% of Serpent-256's output bits change (the Strict Avalanche Criterion). Uses a deliberately public demo key: secrecy isn't the point here, diffusion is.
 5. **CTR Mode explainer** — byte-level counter/keystream/plaintext/ciphertext rows, plus a **reuse-this-nonce toggle** that encrypts two messages under the same nonce and shows `CT1 ⊕ CT2 = PT1 ⊕ PT2` — the shared keystream cancelling out, making the nonce-reuse danger demonstrable instead of merely asserted.
-6. **Performance Comparison** — Serpent-256-CTR (WASM) vs AES-256-GCM (AES-NI) throughput, with the caveat that this reflects browser throughput, not algorithmic speed or practical security.
+6. **Performance Comparison** — Serpent-256-CTR (WASM plus JavaScript CTR framing and byte conversion) vs AES-256-GCM (native Web Crypto) throughput, with the caveat that this compares browser implementations, not algorithmic speed or practical security.
 
 ## What Can Go Wrong
 

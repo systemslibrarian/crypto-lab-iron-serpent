@@ -425,8 +425,9 @@
         <p class="bench-note">
           <strong>Note:</strong> Both ciphers execute every round of their full specification —
           Serpent-256-CTR runs all 32 rounds per block, AES-256-GCM runs all 14.
-          AES-256-GCM benefits from hardware acceleration (AES-NI) via the Web Crypto API.
-          Serpent-256-CTR runs in WebAssembly without hardware acceleration.
+          AES-256-GCM uses the browser's native Web Crypto backend.
+          Serpent uses a WebAssembly block engine with JavaScript CTR framing and byte conversion.
+          Browser, runtime and hardware choices affect both measurements.
           This comparison reflects real-world browser throughput, not algorithmic speed.
         </p>
         <div class="bench-controls">
@@ -456,16 +457,17 @@
         </div>
         <div id="bench-results" class="hidden">
           <p class="bench-takeaway" role="note">
-            Takeaway: <strong>Slower here = more rounds + no hardware AES-NI, NOT weaker.</strong>
-            This bar chart measures your browser’s hardware, not the strength of either cipher.
+            Takeaway: <strong>Measured throughput is not cipher strength.</strong>
+            Serpent's timing includes JavaScript CTR framing and byte conversion; this chart
+            compares the two implementations in your browser, not just their round counts.
           </p>
           <p class="bench-meta" id="bench-meta">Average throughput across <span id="bench-meta-iters">10</span> timed runs · <span id="bench-meta-size">1 MB</span> random plaintext per run · full round count each block</p>
           <div class="bench-row">
-            <span class="bench-label">Serpent-256-CTR <span class="bench-sublabel">(32 rounds/block · WASM, no hardware accel)</span></span>
+            <span class="bench-label">Serpent-256-CTR <span class="bench-sublabel">(32 rounds/block · WASM + JavaScript CTR)</span></span>
             <span id="bench-serpent" class="bench-value">—</span>
           </div>
           <div class="bench-row">
-            <span class="bench-label">AES-256-GCM <span class="bench-sublabel">(14 rounds/block · Web Crypto, AES-NI accelerated)</span></span>
+            <span class="bench-label">AES-256-GCM <span class="bench-sublabel">(14 rounds/block · native Web Crypto)</span></span>
             <span id="bench-aes" class="bench-value">—</span>
           </div>
           <div class="bench-row">
@@ -473,9 +475,8 @@
             <span id="bench-ratio" class="bench-value">—</span>
           </div>
           <blockquote class="bench-callout">
-            Serpent runs more rounds than AES, and in this browser it runs them without the
-            AES-NI hardware AES enjoys — so it measures slower here. That extra work buys a
-            larger security margin, a hedge against future cryptanalysis. It does <strong>not</strong>
+            Serpent runs more rounds than AES, but this throughput difference also includes
+            JavaScript framing, byte conversion and runtime choices. It does <strong>not</strong>
             make Serpent "more secure" against any attack known today: both ciphers are unbroken
             at full rounds. Margin is insurance, not a scoreboard.
           </blockquote>

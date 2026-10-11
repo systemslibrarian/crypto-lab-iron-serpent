@@ -1,7 +1,7 @@
 /**
- * The CTR explainer claims to show the exact construction SerpentCtr uses.
+ * The CTR explainer claims to show the lab's legacy-compatible SerpentCTR.
  * These tests hold it to that: the manually-built keystream (Serpent-ECB over
- * counter blocks) must match SerpentCtr's real output byte-for-byte, including
+ * counter blocks) must match its real output byte-for-byte, including
  * across a carry boundary in the little-endian counter increment.
  */
 import { describe, it, expect, beforeAll } from 'vitest';
@@ -33,7 +33,7 @@ describe('CTR explainer construction', () => {
     expect(plusOne[3]).toBe(0x00);
   });
 
-  it('manual counter/keystream/XOR matches SerpentCtr exactly (multi-block, carry boundary)', () => {
+  it('manual counter/keystream/XOR matches the legacy-compatible CTR adapter (multi-block, carry boundary)', () => {
     const key = new Uint8Array(32);
     crypto.getRandomValues(key);
     const nonce = new Uint8Array(16);
