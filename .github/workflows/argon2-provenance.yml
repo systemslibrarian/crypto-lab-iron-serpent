@@ -1,6 +1,14 @@
 name: Argon2 distribution provenance
 on:
   workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/argon2-provenance.yml'
+      - 'scripts/check-argon2-provenance.py'
+      - 'scripts/tests/test_argon2_provenance.py'
+      - 'docs/argon2-provenance.*'
+      - 'demos/iron-serpent/public/argon2*'
   pull_request:
     branches: [main]
     paths:

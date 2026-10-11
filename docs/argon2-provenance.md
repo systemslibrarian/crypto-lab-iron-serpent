@@ -10,7 +10,7 @@ Run offline positive and negative controls with:
 python3 -m unittest discover -s scripts/tests -p 'test_argon2_provenance.py' -v
 ```
 
-Synthetic archive tests exercise both artifact coverage, omitted/duplicate entries, changed bytes, active-role tampering, malformed metadata, timeout, integrity mismatch, archive errors and partial readability. They establish checker behavior, not source provenance. The PR workflow runs these controls before the live distribution comparison.
+Synthetic archive tests exercise both artifact coverage, omitted/duplicate entries, changed bytes, active-role tampering, malformed metadata, timeout, integrity mismatch, archive errors and partial readability. They establish checker behavior, not source provenance. The read-only workflow runs these controls before the live distribution comparison on relevant pull requests and default-branch pushes. It neither deploys the application nor claims upstream source reproduction.
 
 An earlier maintenance inspection established these official distribution matches. The PR workflow repeats that comparison. Distribution identity does not establish upstream C source-to-binary correspondence. The original compiler and reproducible upstream build remain unknown/unverified. App tests and Argon2 known-answer tests would not alone resolve that gap. No binary, worker, dependency or deployment change is included.
 
