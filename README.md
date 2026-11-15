@@ -28,7 +28,7 @@ The demo is organized as a set of exhibits:
 
 1. **Encrypt / Decrypt** — the full password-based authenticated-encryption round trip. An expandable **Pipeline** diagram traces the real flow (passphrase → Argon2id with salt → masterKey → HKDF splits into encKey + macKey → Serpent-256-CTR keystream XOR → HMAC-SHA256), and labels which stage produces each `salt`, `nonce`, `ciphertext`, and `mac` field in the JSON output.
 2. **Tamper lab** — after a clean authenticated decrypt, one-click buttons flip a single bit of the ciphertext (or of the MAC tag) and re-run decryption, so you *watch* the `✗ Authentication Failed` badge fire. This shows why we verify-then-decrypt (encrypt-then-MAC): the HMAC catches the change before Serpent ever runs.
-3. **Security Margin Visualization** — round counts and unbroken margins for Serpent-256 vs AES, framed honestly: the coloured prefix is the deepest *reduced-round* academic result, **not** a countdown to being broken. Every cipher shown is unbroken at full round count; a wider margin is a hedge against future analysis, not a measure of how close a cipher is to failing.
+3. **Security Margin Visualization** — round counts and unbroken margins for Serpent-256 vs AES, framed honestly: the coloured prefix is the deepest *reduced-round* academic result, **not** a countdown to being broken. No cipher shown here has a practical attack on the full cipher; a wider margin is a hedge against future analysis, not a measure of how close a cipher is to failing.
 4. **Avalanche Effect** — flips a single input bit and shows how ~50% of Serpent-256's output bits change (the Strict Avalanche Criterion). Uses a deliberately public demo key: secrecy isn't the point here, diffusion is.
 5. **CTR Mode explainer** — byte-level counter/keystream/plaintext/ciphertext rows, plus a **reuse-this-nonce toggle** that encrypts two messages under the same nonce and shows `CT1 ⊕ CT2 = PT1 ⊕ PT2` — the shared keystream cancelling out, making the nonce-reuse danger demonstrable instead of merely asserted.
 6. **Performance Comparison** — Serpent-256-CTR (WASM plus JavaScript CTR framing and byte conversion) vs AES-256-GCM (native Web Crypto) throughput, with the caveat that this compares browser implementations, not algorithmic speed or practical security.
@@ -43,7 +43,7 @@ The demo is organized as a set of exhibits:
 
 ## Real-World Usage
 
-- Serpent was an AES finalist (1998), placing second to Rijndael; it is valued for its conservative 32-round design and large security margin.
+- Serpent was an AES candidate (1998) and one of the five finalists (1999), placing second to Rijndael; it is valued for its conservative 32-round design and large security margin.
 - Serpent ships in disk-encryption tools such as VeraCrypt (and the former TrueCrypt), including cascade modes that chain it with AES and Twofish.
 - Argon2id is the recommended password-hashing/KDF function (Password Hashing Competition winner) for stretching passphrases into encryption keys.
 - HMAC-SHA-256 is a widely standardized MAC used to authenticate ciphertexts in encrypt-then-MAC constructions across many protocols.

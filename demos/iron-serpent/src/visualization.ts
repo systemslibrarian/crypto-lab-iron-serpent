@@ -15,7 +15,7 @@ interface CipherVis {
 // attackFrontier = deepest round count that any published academic distinguisher
 // or key-recovery has reached on a REDUCED-ROUND variant. It is NOT a "percent
 // broken" — the full-round ciphers below have no known practical break. The gap
-// to totalRounds is the security margin: rounds no public attack gets near.
+// to totalRounds is the security margin: rounds no reduced-round attack gets near.
 const ciphers: CipherVis[] = [
   {
     name: 'Serpent-256',
@@ -79,7 +79,7 @@ export function renderVisualization(container: HTMLElement): void {
     svg.setAttribute('width', '100%');
     svg.setAttribute('viewBox', `0 0 ${containerWidth} ${svgHeight}`);
     svg.setAttribute('role', 'img');
-    svg.setAttribute('aria-label', 'Security margin chart. Each cipher is shown as its full round count, with the coloured prefix marking the deepest round count any published reduced-round analysis has reached, and the green remainder the untouched security margin. Serpent-256 has 32 rounds with reduced-round results to 12, leaving 20 rounds of margin. AES-128 has 10 rounds, results to 7. AES-192 has 12 rounds, results to 8. AES-256 has 14 rounds, results to 9. These reduced-round results do not break the full ciphers; all four remain unbroken at full round count.');
+    svg.setAttribute('aria-label', 'Security margin chart. Each cipher is shown as its full round count, with the coloured prefix marking the deepest round count any published reduced-round analysis has reached, and the green remainder the untouched security margin. Serpent-256 has 32 rounds with reduced-round results to 12, leaving 20 rounds of margin. AES-128 has 10 rounds, results to 7. AES-192 has 12 rounds, results to 8. AES-256 has 14 rounds, results to 9. These reduced-round results do not break the full ciphers; none of the four has a practical attack on the full cipher.');
     svg.style.maxWidth = `${containerWidth}px`;
     svg.style.display = 'block';
     svg.style.margin = '0 auto';
@@ -165,7 +165,7 @@ export function renderVisualization(container: HTMLElement): void {
         margin_label.setAttribute('text-anchor', 'middle');
         margin_label.setAttribute('fill', '#66bb6a');
         margin_label.setAttribute('font-size', '10');
-        margin_label.textContent = `${margin} rounds of margin (no public attack reaches here)`;
+        margin_label.textContent = `${margin} rounds of margin (no reduced-round attack reaches here)`;
         svg.appendChild(margin_label);
       }
     });
@@ -199,14 +199,14 @@ export function renderVisualization(container: HTMLElement): void {
     });
 
     // Callout \u2014 a neutral statement of what the bars show, no "chose to survive"
-    // editorializing. All four ciphers remain unbroken at full round count.
+    // editorializing. None of the four has a practical attack on the full cipher.
     const callout = document.createElementNS('http://www.w3.org/2000/svg', 'text');
     callout.setAttribute('x', `${containerWidth / 2}`);
     callout.setAttribute('y', `${svgHeight - 15}`);
     callout.setAttribute('text-anchor', 'middle');
     callout.setAttribute('fill', goldColor);
     callout.setAttribute('font-size', '12');
-    callout.textContent = 'A wider margin buys confidence, not proof \u2014 every cipher here is unbroken at full rounds';
+    callout.textContent = 'A wider margin buys confidence, not proof \u2014 no cipher here has a practical attack on the full cipher';
     svg.appendChild(callout);
 
     container.appendChild(svg);

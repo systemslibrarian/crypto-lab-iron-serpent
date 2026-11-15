@@ -374,9 +374,9 @@
           the deepest round count that any published academic result has reached on a
           <em>reduced-round</em> version of the cipher. It is <strong>not a countdown to being
           broken.</strong> A reduced-round distinguisher on 12 of Serpent's 32 rounds does
-          <strong>not</strong> mean the full cipher is "37% cracked" — every cipher shown here
-          is unbroken at its full round count. The green remainder is the
-          <em>security margin</em>: rounds that no public attack comes near. A wider margin is a
+          <strong>not</strong> mean the full cipher is "37% cracked" — no cipher shown here
+          has a practical attack on the full cipher. The green remainder is the
+          <em>security margin</em>: rounds that no published reduced-round attack reaches. A wider margin is a
           hedge against <em>future</em> analysis, not a measure of how close today's cipher is to failing.
         </p>
         <div id="vis-container"></div>
@@ -477,8 +477,8 @@
           <blockquote class="bench-callout">
             Serpent runs more rounds than AES, but this throughput difference also includes
             JavaScript framing, byte conversion and runtime choices. It does <strong>not</strong>
-            make Serpent "more secure" against any attack known today: both ciphers are unbroken
-            at full rounds. Margin is insurance, not a scoreboard.
+            make Serpent "more secure" against any attack known today: neither cipher has a
+            practical attack on the full cipher. Margin is insurance, not a scoreboard.
           </blockquote>
         </div>
       </section>
