@@ -36,7 +36,7 @@ The demo is organized as a set of exhibits:
 ## What Can Go Wrong
 
 - CTR mode provides no integrity on its own. Skipping or mis-ordering the HMAC check lets an attacker flip ciphertext bits and silently flip the corresponding plaintext bits.
-- Counter/nonce reuse under the same key is catastrophic in CTR. XORing two ciphertexts produced with the same keystream recovers the keystream and both plaintexts.
+- Counter/nonce reuse under the same key is catastrophic in CTR. XORing two ciphertexts produced with the same keystream cancels the keystream and leaves `CT1 ⊕ CT2 = PT1 ⊕ PT2` — not the keystream, and not either plaintext on its own, though any crib or known structure then peels both apart.
 - Weak Argon2id parameters undermine everything. Low memory or iteration counts make passphrase-derived keys cheap to brute-force offline, regardless of how strong Serpent is.
 - Verify-then-decrypt matters. Checking the HMAC before decrypting (encrypt-then-MAC) avoids feeding attacker-controlled ciphertext into the cipher.
 - A larger cipher security margin does not fix protocol mistakes. The usual breaks come from mode, nonce, KDF, or MAC errors, not from the Serpent block cipher itself.

@@ -195,7 +195,7 @@
                 <span class="pipe-desc">a fresh random <span class="pipe-field">nonce</span> seeds the counter; Serpent encrypts the counter to a keystream, XORed with your plaintext to make the <span class="pipe-field">ciphertext</span>.</span>
               </li>
               <li>
-                <span class="pipe-stage">HMAC-SHA256(macKey, salt&#8214;nonce&#8214;ciphertext)</span>
+                <span class="pipe-stage">HMAC-SHA256(macKey, salt&#8214;nonce&#8214;ciphertext&#8214;version)</span>
                 <span class="pipe-arrow" aria-hidden="true">&#x2192;</span>
                 <span class="pipe-desc">authenticates everything above into the <span class="pipe-field">mac</span> tag. Encrypt-then-MAC: the tag is computed <em>over the ciphertext</em>, so decryption can verify it before running Serpent.</span>
               </li>
