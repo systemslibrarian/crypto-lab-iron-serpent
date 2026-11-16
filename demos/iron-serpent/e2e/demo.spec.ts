@@ -9,6 +9,7 @@
  */
 import { test, expect, type Page } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
+import { auditControlNames, formatControlNameFailures } from './control-names';
 
 const PASSPHRASE = 'e2e passphrase with adequate length';
 const MESSAGE = 'Round trip through the real UI — WASM, worker KDF and all.';
@@ -224,6 +225,15 @@ test.describe('layout and accessibility', () => {
         .map((v) => `${v.id}: ${v.help}\n  ${v.nodes.map((n) => `${n.html}\n    ${n.any[0]?.message ?? ''}`).join('\n  ')}`)
         .join('\n');
       expect(summary).toBe('');
+
+      // axe's `label` rule accepts a bare `placeholder` as an accessible name,
+      // so a deleted label can leave this gate green. Every passphrase and
+      // payload field in this lab carries a placeholder, so the check has real
+      // work here. See `control-names.ts`.
+      expect(
+        formatControlNameFailures(await auditControlNames(page)),
+        `form controls named only by placeholder/title in ${theme} theme`
+      ).toEqual([]);
     });
   }
 
