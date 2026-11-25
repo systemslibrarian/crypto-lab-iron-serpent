@@ -386,12 +386,12 @@
       <section id="avalanche-section">
         <h2>Avalanche Effect</h2>
         <p class="bench-note">
-          <strong>Strict Avalanche Criterion:</strong> a single-bit change to the input of a
-          strong block cipher should flip about half of the output bits. Encrypt one 128-bit
-          block below, flip a single input bit, and watch how many of Serpent-256's 128
-          output bits change. A result near 50% is exactly what good
-          <span class="term" tabindex="0" role="note" aria-label="Diffusion: how a cipher spreads the influence of each input bit across the whole output, so a tiny input change scrambles the entire block." data-tip="How a cipher spreads each input bit's influence across the whole output — one flipped bit should scramble the entire block.">diffusion</span>
-          looks like.
+          Flip one input bit and compare the two 128-bit ciphertexts. The highlighted cells show
+          <span class="term" tabindex="0" role="note" aria-label="Diffusion: the influence of an input bit across output bits." data-tip="The influence of a change in one input bit can spread across many output bits.">diffusion</span>
+          for this pair of blocks. Try another block or bit to see how the count varies.
+          <strong>Strict avalanche criterion:</strong> for each choice of input bit, each output bit
+          changes with probability ½ over uniformly sampled input blocks, with the key fixed.
+          One pair supplies one observation for each output bit.
           <br />
           <strong>Why a public key here?</strong> This panel uses one fixed, published demo key —
           secrecy isn't the point. We're watching <em>how the cipher scrambles bits</em>, and that

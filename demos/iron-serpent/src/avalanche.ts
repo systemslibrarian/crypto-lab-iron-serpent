@@ -1,5 +1,5 @@
 /**
- * Avalanche effect demo (Strict Avalanche Criterion).
+ * Avalanche effect for a single pair of input blocks.
  *
  * Flipping a single bit of the input to Serpent-256 changes roughly half of
  * the 128 output bits. This panel encrypts one 128-bit block, flips one input
@@ -221,7 +221,7 @@ export function renderAvalanche(container: HTMLElement): void {
     });
 
     stat.innerHTML = `<strong>${changed} of ${BLOCK_BITS}</strong> output bits changed ` +
-      `(<strong>${pct.toFixed(1)}%</strong>) from a single-bit input change — ideal diffusion is ~50%.`;
+      `(<strong>${pct.toFixed(1)}%</strong>) for this pair after flipping input bit ${bit}.`;
     stat.className = 'avalanche-stat';
   };
 

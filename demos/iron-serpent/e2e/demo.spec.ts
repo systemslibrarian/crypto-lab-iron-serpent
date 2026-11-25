@@ -144,16 +144,26 @@ test.describe('interactive panels', () => {
     await expect(page.locator('.ctr-block')).toHaveCount(3);
   });
 
-  test('avalanche panel shows ~50% diffusion', async ({ page }) => {
+  test('avalanche panel reports the observed ciphertext differences for each selected input bit', async ({ page }) => {
     await waitForEngine(page);
     await unlockExhibits(page);
 
     await expect(page.locator('.aval-cell')).toHaveCount(128);
     const stat = await page.locator('#aval-stat').textContent();
     const changed = Number(stat?.match(/(\d+) of 128/)?.[1]);
-    // SAC: a healthy single-sample result lands well inside 64 ± 25.
+    // Keep the expected range for this fixed default example.
     expect(changed).toBeGreaterThan(39);
     expect(changed).toBeLessThan(89);
+    await expect(page.locator('#avalanche-section .bench-note')).toContainText('changes with probability ½');
+    for (const bit of [0, 41, 127]) {
+      await page.locator('#aval-bit').fill(String(bit));
+      const [a, b] = await page.locator('.avalanche-ct-value').allTextContents();
+      const delta = BigInt('0x' + a.trim()) ^ BigInt('0x' + b.trim());
+      const count = delta.toString(2).replace(/0/g, '').length;
+      await expect(page.locator('#aval-stat')).toContainText(`${count} of 128`);
+      await expect(page.locator('#aval-stat')).toContainText(`flipping input bit ${bit}`);
+      await expect(page.locator('#aval-grid .aval-cell.on')).toHaveCount(count);
+    }
   });
 
   test('exhibits are locked until the round trip, then the round visualizer steps 1..32', async ({ page }) => {
