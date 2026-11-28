@@ -1,6 +1,6 @@
 import './style.css';
 import { initSerpent } from './serpent';
-import { encrypt, decrypt } from './crypto';
+import { AuthenticationError, encrypt, decrypt } from './crypto';
 import type { EncryptedPayload } from './crypto';
 import { renderVisualization } from './visualization';
 import { renderAvalanche } from './avalanche';
@@ -329,7 +329,7 @@ async function init() {
     } catch (e) {
       ($('dec-output') as HTMLTextAreaElement).value = '';
       const msg = e instanceof Error ? e.message : String(e);
-      if (msg.includes('tampered')) {
+      if (e instanceof AuthenticationError) {
         badge.textContent = '✗ Authentication Failed';
         badge.className = 'badge failed';
       } else if (e instanceof SyntaxError || msg.startsWith('Invalid encrypted payload') || msg === 'Unsupported payload version') {

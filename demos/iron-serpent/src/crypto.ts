@@ -25,7 +25,12 @@ export interface EncryptedPayload {
 }
 
 const PAYLOAD_VERSION = 'iron-serpent-v1';
-const AUTHENTICATION_ERROR = 'Authentication failed — ciphertext has been tampered with';
+export class AuthenticationError extends Error {
+  constructor() {
+    super('Authentication failed');
+    this.name = 'AuthenticationError';
+  }
+}
 
 function toBase64(bytes: Uint8Array): string {
   let binary = '';
@@ -146,7 +151,7 @@ export async function decrypt(payload: EncryptedPayload, passphrase: Uint8Array)
   const valid = await verifyMAC(macKey, macData, mac);
   if (!valid) {
     encKey.fill(0);
-    throw new Error(AUTHENTICATION_ERROR);
+    throw new AuthenticationError();
   }
 
   const ctr = new SerpentCTR();

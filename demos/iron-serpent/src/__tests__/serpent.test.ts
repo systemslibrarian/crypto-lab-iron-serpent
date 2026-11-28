@@ -129,7 +129,7 @@ describe('Serpent-256 Block Cipher', () => {
   });
 
   it('exhibits the avalanche effect: one input bit flips ~50% of output bits', () => {
-    // Strict Avalanche Criterion — averaged over all 128 single-bit input flips,
+    // Aggregate diffusion for this fixed block, averaged over all 128 input-bit flips:
     // the fraction of changed output bits should sit close to 50%.
     const key = hexToBytes('00112233445566778899aabbccddeeff102132435465768798a9bacbdcedfe0f');
     const base = hexToBytes('53657270656e742d3235362064656d6f');
@@ -237,7 +237,7 @@ describe('Serpent-256-CTR', () => {
     };
 
     await expect(decrypt(tamperedPayload, new TextEncoder().encode('correct horse battery staple'))).rejects.toThrow(
-      'Authentication failed — ciphertext has been tampered with'
+      /^Authentication failed$/
     );
   });
 
@@ -249,7 +249,7 @@ describe('Serpent-256-CTR', () => {
 
     await expect(
       decrypt(payload, new TextEncoder().encode('wrong passphrase'))
-    ).rejects.toThrow('Authentication failed — ciphertext has been tampered with');
+    ).rejects.toThrow(/^Authentication failed$/);
   });
 
   it('round-trips through the full pipeline with the correct passphrase', async () => {

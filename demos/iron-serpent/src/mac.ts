@@ -36,13 +36,12 @@ export async function deriveEncKey(masterKey: Uint8Array): Promise<Uint8Array> {
 
 export async function deriveMACKey(masterKey: Uint8Array): Promise<CryptoKey> {
   const macKeyBits = await hkdfDeriveBits(masterKey, MAC_HKDF_INFO, 256);
-  return crypto.subtle.importKey(
-    'raw',
-    macKeyBits,
-    { name: 'HMAC', hash: 'SHA-256' },
-    false,
-    ['sign', 'verify']
-  );
+  try {
+    return await crypto.subtle.importKey('raw', macKeyBits, { name: 'HMAC', hash: 'SHA-256' }, false, ['sign', 'verify']);
+  } finally {
+    // Best-effort cleanup of the temporary HKDF output after Web Crypto imports it.
+    new Uint8Array(macKeyBits).fill(0);
+  }
 }
 
 export async function computeMAC(key: CryptoKey, data: Uint8Array): Promise<Uint8Array> {

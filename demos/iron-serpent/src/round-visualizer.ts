@@ -257,8 +257,8 @@ export function renderRoundVisualizer(container: HTMLElement): void {
       `<strong>Diffusion after round ${current}:</strong> flipping input bit&nbsp;#0 changes ` +
       `<strong>${spread} of 128</strong> block bits so far (${pct}%). ` +
       (current < 32
-        ? 'Keep stepping — watch it climb toward ~50%.'
-        : 'By the final round it sits near 50%: full avalanche.');
+        ? 'Keep stepping to compare the two blocks after each round.'
+        : 'This is the observed final-round difference for this input pair.');
     renderDiffGrid(diffusion, diffBits(hereBase, hereFlip));
 
     // populate S-box table once
